@@ -1,7 +1,9 @@
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import userRoutes from './routes/user.routes';
+import userRoutes from './routes/user.route';
+import authenticateRoutes from './routes/authenticate.route';
+
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import { responseMiddleware } from './middleware/response.middleware';
 
@@ -34,6 +36,7 @@ app.get('/health', (_req: Request, res: Response) => {
 
 // API Routes
 app.use('/api/users', userRoutes);
+app.use('/api/authenticate', authenticateRoutes);
 
 // Error handling - must be last
 app.use(notFoundHandler);
