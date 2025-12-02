@@ -1,6 +1,9 @@
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import userRoutes from './routes/user.routes';
+import { errorHandler, notFoundHandler } from './middleware/error.middleware';
+import { responseMiddleware } from './middleware/response.middleware';
 
 dotenv.config();
 
@@ -11,19 +14,30 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(responseMiddleware);
 
 // Routes
-app.get('/', (req: Request, res: Response) => {
-  res.json({
-    message: 'IoT Smart Parking System API',
-    version: '1.0.0',
-    status: 'running',
-  });
+app.get('/', (_req: Request, res: Response) => {
+  res.success(
+    {
+      name: 'IoT Smart Parking System API',
+      version: '1.0.0',
+      status: 'running',
+    },
+    'API is running'
+  );
 });
 
-app.get('/health', (req: Request, res: Response) => {
-  res.json({ status: 'healthy' });
+app.get('/health', (_req: Request, res: Response) => {
+  res.success({ status: 'healthy' }, 'Health check passed');
 });
+
+// API Routes
+app.use('/api/users', userRoutes);
+
+// Error handling - must be last
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {

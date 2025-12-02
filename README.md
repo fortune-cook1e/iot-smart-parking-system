@@ -1,114 +1,90 @@
 # IoT Smart Parking System
 
-A modern IoT-based smart parking management system built with a mobile-first approach. This monorepo contains both the mobile application and backend server.
+Modern smart parking management system with React Native mobile app and Node.js backend.
 
-## 🏗️ Project Structure
+## Tech Stack
 
-```
-ht2025-iot-smart-parking-system/
-├── apps/
-│   ├── mobile/          # React Native mobile app (Expo)
-│   └── server/          # Node.js + Express backend
-├── .eslintrc.js         # Shared ESLint configuration
-├── .prettierrc          # Shared Prettier configuration
-└── pnpm-workspace.yaml  # PNPM workspace configuration
-```
+- Mobile: React Native + Expo + TypeScript
+- Backend: Node.js + Express + TypeScript + Prisma + PostgreSQL
 
-## 🚀 Tech Stack
-
-### Mobile App
-
-- **Framework**: React Native with Expo
-- **Router**: Expo Router
-- **Language**: TypeScript
-- **UI Components**: Expo Vector Icons, React Navigation
-
-### Backend Server
-
-- **Runtime**: Node.js
-- **Framework**: Express
-- **Language**: TypeScript
-- **Features**: CORS support, Environment variables
-
-## 📋 Prerequisites
+## Prerequisites
 
 - Node.js >= 18.x
 - pnpm >= 8.x
-- Expo CLI (will be installed with dependencies)
+- Docker & Docker Compose
 
-## 🛠️ Installation
+## 📱 Mobile App Features
+
+- Tab-based navigation
+- Cross-platform support (iOS, Android, Web)
+- Modern UI with Expo components
+- Type-safe routing with Expo Router
+
+## 🖥️ Server Features
+
+- RESTful API endpoints
+- TypeScript for type safety
+- CORS enabled
+- Environment-based configuration
+- Health check endpoint
+
+## Quick Start
 
 ```bash
-# Install all dependencies across the monorepo
+# 1. Install
+git clone <repository-url>
+cd ht2025-iot-smart-parking-system
 pnpm install
-```
 
-## 💻 Development
+# 2. Start database
+docker-compose up -d
 
-### Run Both Apps Simultaneously
+# 3. Setup backend
+cp apps/server/.env.example apps/server/.env
+cd apps/server
+pnpm prisma:generate
+pnpm prisma:migrate
+pnpm prisma:seed
+cd ../..
 
-```bash
-# Run mobile and server in parallel
+# 4. Start dev
 pnpm run dev
 ```
 
-### Run Individual Apps
+## Access
+
+- Mobile: Scan QR with Expo Go
+- Server: http://localhost:3000
+- Prisma Studio: `pnpm --filter server prisma:studio` → http://localhost:5555
+- pgAdmin: http://localhost:5050 (admin@parking.com / admin)
+
+## Commands
 
 ```bash
-# Mobile app only
-pnpm --filter mobile start
+# Run
+pnpm run dev                       # Both apps
+pnpm --filter mobile start         # Mobile only
+pnpm --filter server dev           # Server only
 
-# Backend server only
-pnpm --filter server dev
+# Database
+pnpm --filter server prisma:migrate    # Run migrations
+pnpm --filter server prisma:studio     # Open GUI
+pnpm --filter server prisma:seed       # Seed data
+
+# Code quality
+pnpm lint && pnpm format
 ```
 
-### Mobile-Specific Commands
+## Database
 
-```bash
-# Start Expo with Android
-pnpm --filter mobile android
+**PostgreSQL**: `localhost:5432` / `smart_parking` / `parking_user` / `parking_password`
 
-# Start Expo with iOS
-pnpm --filter mobile ios
+**pgAdmin**: Use host `postgres` (not localhost) when adding server
 
-# Start Expo web version
-pnpm --filter mobile web
-```
+## Test Accounts
 
-### Server-Specific Commands
-
-```bash
-# Build TypeScript
-pnpm --filter server build
-
-# Run production build
-pnpm --filter server start
-
-# Type checking
-pnpm --filter server type-check
-```
-
-## 🔧 Code Quality
-
-### Linting
-
-```bash
-# Lint entire project
-pnpm lint
-
-# Auto-fix linting issues
-pnpm lint:fix
-```
-
-### Formatting
-
-```bash
-# Format all files
-pnpm format
-
-# Check formatting without modifying
-pnpm format:check
-```
+- `admin@parking.com` / `admin123`
+- `user@parking.com` / `user123`
 
 ## 📦 Managing Dependencies
 
@@ -137,78 +113,6 @@ pnpm --filter server add mongoose
 # Add testing library to server
 pnpm --filter server add -D jest @types/jest
 ```
-
-## 🌐 Environment Variables
-
-### Server
-
-Create `.env` file in `apps/server/`:
-
-```env
-PORT=3000
-NODE_ENV=development
-```
-
-See `apps/server/.env.example` for all available options.
-
-## 📱 Mobile App Features
-
-- Tab-based navigation
-- Cross-platform support (iOS, Android, Web)
-- Modern UI with Expo components
-- Type-safe routing with Expo Router
-
-## 🖥️ Server Features
-
-- RESTful API endpoints
-- TypeScript for type safety
-- CORS enabled
-- Environment-based configuration
-- Health check endpoint
-
-## 🏃‍♂️ Quick Start Guide
-
-1. **Clone the repository**
-
-   ```bash
-   git clone <repository-url>
-   cd ht2025-iot-smart-parking-system
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   pnpm install
-   ```
-
-3. **Set up environment variables**
-
-   ```bash
-   cp apps/server/.env.example apps/server/.env
-   ```
-
-4. **Start development**
-
-   ```bash
-   pnpm run dev
-   ```
-
-5. **Access the applications**
-   - Mobile: Scan QR code with Expo Go app
-   - Server: http://localhost:3000
-
-## 📝 Available Scripts
-
-| Command             | Description                        |
-| ------------------- | ---------------------------------- |
-| `pnpm install`      | Install all dependencies           |
-| `pnpm run dev`      | Run mobile and server concurrently |
-| `pnpm mobile`       | Start mobile app only              |
-| `pnpm server`       | Start server only                  |
-| `pnpm lint`         | Lint all code                      |
-| `pnpm lint:fix`     | Fix linting issues                 |
-| `pnpm format`       | Format all code                    |
-| `pnpm format:check` | Check code formatting              |
 
 ## 🤝 Contributing
 

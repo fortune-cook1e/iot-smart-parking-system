@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+dist/
+build/
+
+# Generated files
+*.log
+.DS_Store
+
+# Scripts that don't need linting
+apps/mobile/scripts/reset-project.js
+
+# Config files (already linted by their environment)
+**/.eslintrc.js
+**/eslint.config.js
