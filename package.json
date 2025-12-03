@@ -1,12 +1,15 @@
 {
-  "name": "ht2025-iot-smart-parking-system",
+  "name": "iot-smart-parking-system",
   "version": "1.0.0",
   "description": "",
   "private": true,
   "scripts": {
     "mobile": "pnpm --filter mobile start",
     "server": "pnpm --filter server dev",
+    "schemas": "pnpm --filter @iot-smart-parking-system/shared-schemas dev",
     "dev": "pnpm --parallel --filter mobile --filter server start",
+    "dev:server": "pnpm --parallel --filter @iot-smart-parking-system/shared-schemas --filter server dev",
+    "build:schemas": "pnpm --filter @iot-smart-parking-system/shared-schemas build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
