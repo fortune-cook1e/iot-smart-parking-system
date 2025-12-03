@@ -33,7 +33,7 @@ Modern smart parking management system with React Native mobile app and Node.js 
 ```bash
 # 1. Install
 git clone <repository-url>
-cd ht2025-iot-smart-parking-system
+cd iot-smart-parking-system
 pnpm install
 
 # 2. Start database
