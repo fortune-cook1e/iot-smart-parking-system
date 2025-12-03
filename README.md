@@ -55,6 +55,7 @@ pnpm run dev
 
 - Mobile: Scan QR with Expo Go
 - Server: http://localhost:3000
+- Swagger: http://localhost:3000/api-docs
 - Prisma Studio: `pnpm --filter server prisma:studio` → http://localhost:5555
 - pgAdmin: http://localhost:5050 (admin@parking.com / admin)
 
