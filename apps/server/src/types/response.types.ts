@@ -1,4 +1,4 @@
-import { ResponseCode } from './response-code';
+import { ResponseCode } from '@iot-smart-parking-system/shared-schemas';
 
 export interface ApiResponse<T = unknown> {
   code: ResponseCode;
@@ -18,25 +18,4 @@ export function successResponse<T>(
     data,
     message,
   };
-}
-
-export function errorResponse(
-  message: string,
-  code: ResponseCode = ResponseCode.INTERNAL_ERROR
-): ApiResponse {
-  return {
-    code,
-    status: 'error',
-    message,
-  };
-}
-
-// Extend Express Response type
-// eslint-disable-next-line @typescript-eslint/no-namespace
-declare global {
-  namespace Express {
-    interface Response {
-      success<T>(data: T, message?: string, code?: ResponseCode): Response;
-    }
-  }
 }

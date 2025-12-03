@@ -1,7 +1,11 @@
 import prisma from '../lib/prisma';
-import { CreateUserDto, UpdateUserDto, UserResponse } from '../types/user.types';
 import { generateSalt, hashPassword, verifyPassword } from '../utils/crypto';
 import { AppError } from '../middleware/error.middleware';
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  UserResponse,
+} from '@iot-smart-parking-system/shared-schemas';
 
 /**
  * Create a new user
@@ -15,7 +19,10 @@ export async function createUser(data: CreateUserDto): Promise<UserResponse> {
   });
 
   if (existingUser) {
-    throw new AppError('User with this email or username already exists', 400);
+    throw new AppError({
+      message: 'Username or email already in use',
+      statusCode: 400,
+    });
   }
 
   // Generate salt and hash password
@@ -138,7 +145,10 @@ export async function updateUser(id: string, data: UpdateUserDto): Promise<UserR
   // Check if user exists
   const existingUser = await prisma.user.findUnique({ where: { id } });
   if (!existingUser) {
-    throw new AppError('User not found', 404);
+    throw new AppError({
+      message: 'User not found',
+      statusCode: 404,
+    });
   }
 
   // Check for duplicate username or email if being updated
@@ -158,7 +168,10 @@ export async function updateUser(id: string, data: UpdateUserDto): Promise<UserR
     });
 
     if (duplicate) {
-      throw new AppError('Username or email already in use', 400);
+      throw new AppError({
+        message: 'Username or email already in use',
+        statusCode: 400,
+      });
     }
   }
 
@@ -201,7 +214,10 @@ export async function updateUser(id: string, data: UpdateUserDto): Promise<UserR
 export async function deleteUser(id: string): Promise<void> {
   const user = await prisma.user.findUnique({ where: { id } });
   if (!user) {
-    throw new AppError('User not found', 404);
+    throw new AppError({
+      message: 'User not found',
+      statusCode: 404,
+    });
   }
 
   await prisma.user.delete({ where: { id } });

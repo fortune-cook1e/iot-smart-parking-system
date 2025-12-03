@@ -5,7 +5,10 @@ import { authenticate } from '../middleware/auth.middleware';
 const router: IRouter = Router();
 
 router.get('/test', (_req, res) => {
-  res.success(null, 'Authentication route is working');
+  res.success({
+    data: null,
+    message: 'Authentication route is working',
+  });
 });
 router.post('/sign-in', signIn);
 router.post('/sign-up', signUp);

@@ -1,0 +1,26 @@
+{
+  "name": "@iot-smart-parking-system/shared-schemas",
+  "version": "1.0.0",
+  "description": "Shared Zod validation schemas for IoT Smart Parking System",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "zod",
+    "validation",
+    "schema",
+    "typescript"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

@@ -20,18 +20,14 @@ app.use(responseMiddleware);
 
 // Routes
 app.get('/', (_req: Request, res: Response) => {
-  res.success(
-    {
-      name: 'IoT Smart Parking System API',
-      version: '1.0.0',
-      status: 'running',
-    },
-    'API is running'
-  );
+  res.success({ message: 'Welcome to the IoT Smart Parking System API', data: null });
 });
 
 app.get('/health', (_req: Request, res: Response) => {
-  res.success({ status: 'healthy' }, 'Health check passed');
+  res.success({
+    message: ' API is healthy and running',
+    data: null,
+  });
 });
 
 // API Routes

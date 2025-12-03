@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken, JwtPayload } from '../utils/jwt';
 import { AppError } from './error.middleware';
-import { ResponseCode } from '../types/response-code';
+import { ResponseCode } from '@iot-smart-parking-system/shared-schemas';
 
 // Extend Express Request to include user
 declare global {
@@ -22,7 +22,11 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new AppError('No token provided', 401, ResponseCode.UNAUTHORIZED);
+      throw new AppError({
+        message: 'No token provided',
+        statusCode: 400,
+        code: ResponseCode.BAD_REQUEST,
+      });
     }
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
@@ -37,9 +41,17 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
       // Check if token is expired or invalid
       const errorMessage = (jwtError as Error).message;
       if (errorMessage.includes('expired')) {
-        throw new AppError('Token has expired', 401, ResponseCode.TOKEN_EXPIRED);
+        throw new AppError({
+          message: 'Token has expired',
+          statusCode: 401,
+          code: ResponseCode.TOKEN_EXPIRED,
+        });
       } else {
-        throw new AppError('Invalid token', 401, ResponseCode.TOKEN_INVALID);
+        throw new AppError({
+          message: 'Invalid token',
+          statusCode: 401,
+          code: ResponseCode.TOKEN_INVALID,
+        });
       }
     }
   } catch (error) {

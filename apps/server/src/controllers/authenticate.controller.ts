@@ -1,20 +1,28 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../middleware/error.middleware';
-import { ResponseCode } from '../types/response-code';
 import { createUser, verifyUserCredentials } from '../services/user.service';
 import { generateToken, revokeToken } from '../utils/jwt';
+import { ResponseCode } from '@iot-smart-parking-system/shared-schemas';
 
 export async function signIn(req: Request, res: Response, next: NextFunction) {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      throw new AppError('Email and password are required', 400, ResponseCode.BAD_REQUEST);
+      throw new AppError({
+        message: 'Email and password are required',
+        statusCode: 400,
+        code: ResponseCode.BAD_REQUEST,
+      });
     }
 
     const user = await verifyUserCredentials(email, password);
 
     if (!user) {
-      throw new AppError('Invalid credentials', 401, ResponseCode.UNAUTHORIZED);
+      throw new AppError({
+        message: 'Invalid credentials',
+        statusCode: 401,
+        code: ResponseCode.UNAUTHORIZED,
+      });
     }
 
     const token = generateToken({
@@ -23,7 +31,10 @@ export async function signIn(req: Request, res: Response, next: NextFunction) {
       username: user.username,
     });
 
-    res.success({ user, token }, 'Login successful');
+    res.success({
+      data: { token, user },
+      message: 'Login successful',
+    });
   } catch (e) {
     next(e);
   }
@@ -34,7 +45,10 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
     const { email, password, username } = req.body;
     const newUser = await createUser({ email, username, password });
 
-    res.success(newUser, 'Sign-up successful');
+    res.success({
+      data: newUser,
+      message: 'Sign-up successful',
+    });
   } catch (e) {
     next(e);
   }
@@ -48,7 +62,11 @@ export async function signOut(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new AppError('No token provided', 400, ResponseCode.BAD_REQUEST);
+      throw new AppError({
+        message: 'No token provided',
+        statusCode: 400,
+        code: ResponseCode.BAD_REQUEST,
+      });
     }
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
@@ -56,7 +74,10 @@ export async function signOut(req: Request, res: Response, next: NextFunction) {
     // Add token to blacklist
     revokeToken(token);
 
-    res.success(null, 'Sign-out successful');
+    res.success({
+      data: null,
+      message: 'Logout successful',
+    });
   } catch (e) {
     next(e);
   }

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import * as userService from '../services/user.service';
 import { CreateUserDto, UpdateUserDto } from '../types/user.types';
 import { AppError } from '../middleware/error.middleware';
-import { ResponseCode } from '../types/response-code';
+import { ResponseCode } from '@iot-smart-parking-system/shared-schemas';
 
 /**
  * Create a new user
@@ -13,15 +13,18 @@ export async function createUserHandler(req: Request, res: Response, next: NextF
 
     // Validate required fields
     if (!userData.username || !userData.email || !userData.password) {
-      throw new AppError(
-        'Username, email, and password are required',
-        400,
-        ResponseCode.BAD_REQUEST
-      );
+      throw new AppError({
+        message: 'Username, email, and password are required',
+        statusCode: 400,
+        code: ResponseCode.BAD_REQUEST,
+      });
     }
 
     const user = await userService.createUser(userData);
-    res.status(201).success(user, 'User created successfully', ResponseCode.CREATED);
+    res.status(201).success({
+      data: user,
+      message: 'User created successfully',
+    });
   } catch (error) {
     next(error);
   }
@@ -36,10 +39,17 @@ export async function getUserByIdHandler(req: Request, res: Response, next: Next
     const user = await userService.getUserById(id);
 
     if (!user) {
-      throw new AppError('User not found', 404, ResponseCode.NOT_FOUND);
+      throw new AppError({
+        message: 'User not found',
+        statusCode: 404,
+        code: ResponseCode.NOT_FOUND,
+      });
     }
 
-    res.success(user, 'User retrieved successfully');
+    res.success({
+      data: user,
+      message: 'User retrieved successfully',
+    });
   } catch (error) {
     next(error);
   }
@@ -54,7 +64,10 @@ export async function getAllUsersHandler(req: Request, res: Response, next: Next
     const limit = parseInt(req.query.limit as string) || 10;
 
     const result = await userService.getAllUsers(page, limit);
-    res.success(result, 'Users retrieved successfully');
+    res.success({
+      data: result,
+      message: 'Users retrieved successfully',
+    });
   } catch (error) {
     next(error);
   }
@@ -69,7 +82,10 @@ export async function updateUserHandler(req: Request, res: Response, next: NextF
     const updateData: UpdateUserDto = req.body;
 
     const user = await userService.updateUser(id, updateData);
-    res.success(user, 'User updated successfully', ResponseCode.UPDATED);
+    res.success({
+      data: user,
+      message: 'User updated successfully',
+    });
   } catch (error) {
     next(error);
   }
@@ -82,7 +98,10 @@ export async function deleteUserHandler(req: Request, res: Response, next: NextF
   try {
     const { id } = req.params;
     await userService.deleteUser(id);
-    res.success(null, 'User deleted successfully', ResponseCode.DELETED);
+    res.success({
+      data: null,
+      message: 'User deleted successfully',
+    });
   } catch (error) {
     next(error);
   }
@@ -94,16 +113,27 @@ export async function deleteUserHandler(req: Request, res: Response, next: NextF
 export async function getCurrentUserHandler(req: Request, res: Response, next: NextFunction) {
   try {
     if (!req.user) {
-      throw new AppError('User not authenticated', 401, ResponseCode.UNAUTHORIZED);
+      throw new AppError({
+        message: 'Unauthorized',
+        statusCode: 401,
+        code: ResponseCode.UNAUTHORIZED,
+      });
     }
 
     const user = await userService.getUserById(req.user.userId);
 
     if (!user) {
-      throw new AppError('User not found', 404, ResponseCode.NOT_FOUND);
+      throw new AppError({
+        message: 'User not found',
+        statusCode: 404,
+        code: ResponseCode.NOT_FOUND,
+      });
     }
 
-    res.success(user, 'Current user retrieved successfully');
+    res.success({
+      data: user,
+      message: 'Current user retrieved successfully',
+    });
   } catch (error) {
     next(error);
   }

@@ -1,16 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
-import { errorResponse } from '../types/response.types';
-import { ResponseCode } from '../types/response-code';
+import { ResponseCode } from '@iot-smart-parking-system/shared-schemas';
+
+interface AppErrorConstructor {
+  message: string;
+  statusCode: number;
+  code?: ResponseCode;
+}
 
 export class AppError extends Error {
   statusCode: number;
   code: ResponseCode;
   isOperational: boolean;
 
-  constructor(message: string, statusCode: number, code?: ResponseCode) {
+  constructor({ message, statusCode = 400, code }: AppErrorConstructor) {
     super(message);
     this.statusCode = statusCode;
-    this.code = code || AppError.getCodeFromStatus(statusCode);
+    this.code = code || AppError.getCodeFromStatus(statusCode || ResponseCode.INTERNAL_ERROR);
     this.isOperational = true;
 
     Error.captureStackTrace(this, this.constructor);
@@ -38,15 +43,27 @@ export class AppError extends Error {
 
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction) {
   if (err instanceof AppError) {
-    return res.status(err.statusCode).json(errorResponse(err.message, err.code));
+    return res.status(err.statusCode).json({
+      code: err.code,
+      status: 'error',
+      message: err.message,
+    });
   }
 
   // Log unexpected errors
   console.error('Unexpected error:', err);
 
-  return res.status(500).json(errorResponse('Internal server error', ResponseCode.INTERNAL_ERROR));
+  return res.status(500).json({
+    code: ResponseCode.INTERNAL_ERROR,
+    status: 'error',
+    message: 'Internal Server Error',
+  });
 }
 
 export function notFoundHandler(req: Request, res: Response) {
-  res.status(404).json(errorResponse(`Route ${req.originalUrl} not found`, ResponseCode.NOT_FOUND));
+  res.status(404).json({
+    code: ResponseCode.NOT_FOUND,
+    status: 'error',
+    message: `Cannot find ${req.originalUrl} on this server`,
+  });
 }
