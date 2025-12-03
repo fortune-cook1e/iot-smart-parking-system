@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ResponseCode } from '@iot-smart-parking-system/shared-schemas';
+import { z } from 'zod';
 
 interface AppErrorConstructor {
   message: string;
@@ -42,6 +43,23 @@ export class AppError extends Error {
 }
 
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction) {
+  // Handle Zod validation errors
+  if (err instanceof z.ZodError) {
+    // const errors = err.errors.map(error => ({
+    //   field: error.path.join('.'),
+    //   message: error.message,
+    // }));
+    const errorMessage = err.errors[0].message;
+
+    return res.status(400).json({
+      code: ResponseCode.VALIDATION_ERROR,
+      status: 'error',
+      message: errorMessage || 'Validation failed',
+      // errors,
+    });
+  }
+
+  // Handle AppError
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       code: err.code,

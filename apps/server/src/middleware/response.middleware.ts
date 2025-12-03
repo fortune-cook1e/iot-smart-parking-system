@@ -13,7 +13,7 @@ declare global {
 
 interface ResponseMiddlewareParams<T> {
   data: T;
-  message: string;
+  message?: string;
   code?: ResponseCode;
 }
 
@@ -28,7 +28,6 @@ export function responseMiddleware(_req: Request, res: Response, next: NextFunct
   }: ResponseMiddlewareParams<T>) {
     return this.json({
       code,
-      status: 'success',
       data,
       message,
     });

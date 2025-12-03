@@ -37,11 +37,13 @@ export const UpdateUserSchema = z
     message: 'At least one field must be provided for update',
   });
 
-// Login schema
-export const LoginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
+// Authentication schema
+export const LoginSchema = CreateUserSchema.pick({
+  email: true,
+  password: true,
 });
+
+export const RegisterSchema = CreateUserSchema;
 
 // User response schema (without sensitive data)
 export const UserResponseSchema = UserSchema.omit({
@@ -55,4 +57,5 @@ export type User = z.infer<typeof UserSchema>;
 export type CreateUserDto = z.infer<typeof CreateUserSchema>;
 export type UpdateUserDto = z.infer<typeof UpdateUserSchema>;
 export type LoginDto = z.infer<typeof LoginSchema>;
+export type RegisterDto = z.infer<typeof RegisterSchema>;
 export type UserResponse = z.infer<typeof UserResponseSchema>;

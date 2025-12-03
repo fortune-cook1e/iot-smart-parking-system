@@ -2,11 +2,15 @@ import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../middleware/error.middleware';
 import { createUser, verifyUserCredentials } from '../services/user.service';
 import { generateToken, revokeToken } from '../utils/jwt';
-import { ResponseCode } from '@iot-smart-parking-system/shared-schemas';
+import {
+  ResponseCode,
+  LoginSchema,
+  RegisterSchema,
+} from '@iot-smart-parking-system/shared-schemas';
 
-export async function signIn(req: Request, res: Response, next: NextFunction) {
+export async function login(req: Request, res: Response, next: NextFunction) {
   try {
-    const { email, password } = req.body;
+    const { email, password } = LoginSchema.parse(req.body);
     if (!email || !password) {
       throw new AppError({
         message: 'Email and password are required',
@@ -40,14 +44,14 @@ export async function signIn(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function signUp(req: Request, res: Response, next: NextFunction) {
+export async function register(req: Request, res: Response, next: NextFunction) {
   try {
-    const { email, password, username } = req.body;
+    const { email, password, username } = RegisterSchema.parse(req.body);
     const newUser = await createUser({ email, username, password });
 
     res.success({
       data: newUser,
-      message: 'Sign-up successful',
+      message: 'Register successful',
     });
   } catch (e) {
     next(e);
@@ -57,7 +61,7 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
 /**
  * Sign-out handler - revoke the JWT token
  */
-export async function signOut(req: Request, res: Response, next: NextFunction) {
+export async function logout(req: Request, res: Response, next: NextFunction) {
   try {
     const authHeader = req.headers.authorization;
 

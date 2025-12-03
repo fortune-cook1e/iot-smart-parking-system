@@ -1,15 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
 import * as userService from '../services/user.service';
-import { CreateUserDto, UpdateUserDto } from '../types/user.types';
 import { AppError } from '../middleware/error.middleware';
-import { ResponseCode } from '@iot-smart-parking-system/shared-schemas';
+import {
+  CreateUserSchema,
+  ResponseCode,
+  CreateUserDto,
+  UpdateUserDto,
+  UpdateUserSchema,
+} from '@iot-smart-parking-system/shared-schemas';
 
 /**
  * Create a new user
  */
 export async function createUserHandler(req: Request, res: Response, next: NextFunction) {
   try {
-    const userData: CreateUserDto = req.body;
+    const userData: CreateUserDto = CreateUserSchema.parse(req.body);
 
     // Validate required fields
     if (!userData.username || !userData.email || !userData.password) {
@@ -79,7 +84,7 @@ export async function getAllUsersHandler(req: Request, res: Response, next: Next
 export async function updateUserHandler(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
-    const updateData: UpdateUserDto = req.body;
+    const updateData: UpdateUserDto = UpdateUserSchema.parse(req.body);
 
     const user = await userService.updateUser(id, updateData);
     res.success({
@@ -132,7 +137,6 @@ export async function getCurrentUserHandler(req: Request, res: Response, next: N
 
     res.success({
       data: user,
-      message: 'Current user retrieved successfully',
     });
   } catch (error) {
     next(error);
