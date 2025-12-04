@@ -12,14 +12,50 @@ datasource db {
 
 // User model for authentication and profile management
 model User {
-  id        String   @id @default(uuid())
-  username  String   @unique
-  email     String   @unique
-  password  String
-  salt      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String         @id @default(uuid())
+  username      String         @unique
+  email         String         @unique
+  password      String
+  salt          String
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at")
+  subscriptions Subscription[]
 
   @@map("users")
+}
+
+// Parking space model for parking lot management
+model ParkingSpace {
+  id            String         @id @default(uuid())
+  sensorId      String         @unique @map("sensor_id")
+  description   String?
+  address       String         // Text address, e.g. "Building A, Floor 1, Spot 15, Beijing"
+  latitude      Float          // Latitude coordinate
+  longitude     Float          // Longitude coordinate
+  isOccupied    Boolean        @default(false) @map("is_occupied")
+  currentPrice  Float          @default(0) @map("current_price")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at")
+  subscriptions Subscription[]
+
+  @@index([address])
+  @@index([isOccupied])
+  @@index([latitude, longitude])
+  @@map("parking_spaces")
+}
+
+// Subscription model for users to monitor parking space availability
+model Subscription {
+  id             String       @id @default(uuid())
+  userId         String       @map("user_id")
+  parkingSpaceId String       @map("parking_space_id")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parkingSpace   ParkingSpace @relation(fields: [parkingSpaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, parkingSpaceId])
+  @@index([userId])
+  @@index([parkingSpaceId])
+  @@map("subscriptions")
 }
 
