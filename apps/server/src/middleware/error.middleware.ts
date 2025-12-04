@@ -79,6 +79,7 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
 }
 
 export function notFoundHandler(req: Request, res: Response) {
+  console.log(`404 Not Found: ${req.originalUrl}`);
   res.status(404).json({
     code: ResponseCode.NOT_FOUND,
     status: 'error',
