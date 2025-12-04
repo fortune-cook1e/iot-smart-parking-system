@@ -21,7 +21,6 @@ export async function createUserHandler(req: Request, res: Response, next: NextF
       throw new AppError({
         message: 'Username, email, and password are required',
         statusCode: 400,
-        code: ResponseCode.BAD_REQUEST,
       });
     }
 
