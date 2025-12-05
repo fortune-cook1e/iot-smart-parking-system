@@ -4,11 +4,11 @@ import { z } from 'zod';
  * Response code enum
  */
 export enum ResponseCode {
-  // Success codes (10000 - 19999)
+  // Success codes (10000)
   SUCCESS = 10000,
-  CREATED = 10001,
-  UPDATED = 10002,
-  DELETED = 10003,
+
+  // Error
+  FAILURE = 20000,
 
   // Client error codes (40000 - 49999)
   BAD_REQUEST = 40000,

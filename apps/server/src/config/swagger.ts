@@ -157,6 +157,213 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
+        // Parking Space
+        ParkingSpace: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              format: 'uuid',
+              example: '550e8400-e29b-41d4-a716-446655440000',
+            },
+            sensorId: {
+              type: 'string',
+              example: 'SENSOR-001',
+            },
+            description: {
+              type: 'string',
+              nullable: true,
+              example: 'Near entrance, close to elevator',
+            },
+            address: {
+              type: 'string',
+              example: 'Building A, Floor 1, Spot 15, Beijing SOHO, Chaoyang District, Beijing',
+            },
+            latitude: {
+              type: 'number',
+              format: 'double',
+              example: 39.9175,
+            },
+            longitude: {
+              type: 'number',
+              format: 'double',
+              example: 116.458,
+            },
+            isOccupied: {
+              type: 'boolean',
+              example: false,
+            },
+            currentPrice: {
+              type: 'number',
+              example: 5.5,
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+            },
+          },
+        },
+        // Create Parking Space DTO
+        CreateParkingSpaceDto: {
+          type: 'object',
+          required: ['sensorId', 'address', 'latitude', 'longitude', 'currentPrice'],
+          properties: {
+            sensorId: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 100,
+              example: 'SENSOR-001',
+            },
+            description: {
+              type: 'string',
+              maxLength: 500,
+              example: 'Near entrance, close to elevator',
+            },
+            address: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 500,
+              example: 'Building A, Floor 1, Spot 15, Beijing SOHO, Chaoyang District, Beijing',
+            },
+            latitude: {
+              type: 'number',
+              format: 'double',
+              minimum: -90,
+              maximum: 90,
+              example: 39.9175,
+            },
+            longitude: {
+              type: 'number',
+              format: 'double',
+              minimum: -180,
+              maximum: 180,
+              example: 116.458,
+            },
+            isOccupied: {
+              type: 'boolean',
+              default: false,
+              example: false,
+            },
+            currentPrice: {
+              type: 'number',
+              minimum: 0,
+              example: 5.5,
+            },
+          },
+        },
+        // Update Parking Space DTO
+        UpdateParkingSpaceDto: {
+          type: 'object',
+          properties: {
+            sensorId: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 100,
+              example: 'SENSOR-002',
+            },
+            description: {
+              type: 'string',
+              maxLength: 500,
+              nullable: true,
+              example: 'Updated description',
+            },
+            address: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 500,
+              example: 'Building B, Floor 2, Beijing',
+            },
+            latitude: {
+              type: 'number',
+              format: 'double',
+              minimum: -90,
+              maximum: 90,
+              example: 39.92,
+            },
+            longitude: {
+              type: 'number',
+              format: 'double',
+              minimum: -180,
+              maximum: 180,
+              example: 116.46,
+            },
+            isOccupied: {
+              type: 'boolean',
+              example: true,
+            },
+            currentPrice: {
+              type: 'number',
+              minimum: 0,
+              example: 6.0,
+            },
+          },
+        },
+        // Subscription
+        Subscription: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              format: 'uuid',
+              example: '660e8400-e29b-41d4-a716-446655440001',
+            },
+            userId: {
+              type: 'string',
+              format: 'uuid',
+              example: '770e8400-e29b-41d4-a716-446655440002',
+            },
+            parkingSpaceId: {
+              type: 'string',
+              format: 'uuid',
+              example: '550e8400-e29b-41d4-a716-446655440000',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+            },
+          },
+        },
+        // Subscription with Parking Space
+        SubscriptionWithParkingSpace: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              format: 'uuid',
+            },
+            userId: {
+              type: 'string',
+              format: 'uuid',
+            },
+            parkingSpaceId: {
+              type: 'string',
+              format: 'uuid',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+            },
+            parkingSpace: {
+              $ref: '#/components/schemas/ParkingSpace',
+            },
+          },
+        },
+        // Create Subscription DTO
+        CreateSubscriptionDto: {
+          type: 'object',
+          required: ['parkingSpaceId'],
+          properties: {
+            parkingSpaceId: {
+              type: 'string',
+              format: 'uuid',
+              example: '550e8400-e29b-41d4-a716-446655440000',
+            },
+          },
+        },
       },
     },
     tags: [
@@ -167,6 +374,18 @@ const options: swaggerJsdoc.Options = {
       {
         name: 'Users',
         description: 'User management endpoints',
+      },
+      {
+        name: 'Parking Spaces',
+        description: 'Parking space management endpoints',
+      },
+      {
+        name: 'Subscriptions',
+        description: 'Parking space subscription endpoints for real-time notifications',
+      },
+      {
+        name: 'IoT Sensors',
+        description: 'IoT sensor webhook endpoints for status updates',
       },
     ],
   },
