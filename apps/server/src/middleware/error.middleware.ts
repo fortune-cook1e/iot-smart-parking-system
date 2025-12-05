@@ -73,7 +73,7 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     // database cannot be connected
     return res.status(500).json({
       code: ResponseCode.FAILURE,
-      error: 'Database Initialization Error',
+      message: 'Database Initialization Error',
     });
   }
 
@@ -81,7 +81,7 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     // parameters passed to Prisma Client are invalid
     return res.status(400).json({
       code: ResponseCode.FAILURE,
-      error: 'Prisma Validation Error',
+      message: 'Prisma Validation Error',
     });
   }
 
