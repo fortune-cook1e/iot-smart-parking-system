@@ -2,6 +2,7 @@ import Constants from 'expo-constants';
 import axios from 'axios';
 import { Platform } from 'react-native';
 import { storage } from './storage';
+import { showError } from '@/utils/toast';
 
 // determine API base URL based on environment
 const getApiBaseUrl = () => {
@@ -50,7 +51,6 @@ apiClient.interceptors.request.use(
 // response interceptor - handle errors
 apiClient.interceptors.response.use(
   response => {
-    console.log('✅ API Response:', response.config.url, response.status);
     return response.data;
   },
   async error => {
@@ -60,6 +60,11 @@ apiClient.interceptors.response.use(
       message: error.message,
       data: error.response?.data,
     });
+
+    showError(
+      'Request Failed',
+      error.response?.data?.message || 'An error occurred while processing your request.'
+    );
 
     if (error.response?.status === 401) {
       // Token expired, clear local storage
