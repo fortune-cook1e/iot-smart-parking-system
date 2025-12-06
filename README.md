@@ -122,6 +122,11 @@ pnpm --filter server add -D jest @types/jest
 3. Test your changes before committing
 4. Keep dependencies up to date
 
+## Preview
+
+![home](./screenshots/home.PNG)
+![Parking](./screenshots/parking.PNG)
+
 ## 📄 License
 
 ISC
