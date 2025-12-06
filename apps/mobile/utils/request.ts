@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 import { storage } from './storage';
 import { showError } from '@/utils/toast';
+import { ResponseCode } from '@iot-smart-parking-system/shared-schemas';
 
 // determine API base URL based on environment
 const getApiBaseUrl = () => {
@@ -34,8 +35,6 @@ export const apiClient = axios.create({
 // request interceptor - add token
 apiClient.interceptors.request.use(
   async config => {
-    console.log('📤 API Request:', config.method?.toUpperCase(), config.url);
-
     const token = await storage.getItem('auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -51,7 +50,14 @@ apiClient.interceptors.request.use(
 // response interceptor - handle errors
 apiClient.interceptors.response.use(
   response => {
-    return response.data;
+    const {
+      data: { data, code, message },
+    } = response;
+    if (code === ResponseCode.SUCCESS) {
+      return data;
+    } else {
+      return Promise.reject({ message, code });
+    }
   },
   async error => {
     console.error('❌ API Error:', {

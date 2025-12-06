@@ -9,7 +9,6 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +17,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { LoginSchema, CreateUserSchema } from '@iot-smart-parking-system/shared-schemas';
 import { z } from 'zod';
 import * as authService from '@/services/auth';
+import { useAuthStore } from '@/store/auth';
+import { showSuccess, showError } from '@/utils/toast';
 
 type AuthMode = 'login' | 'register';
 
@@ -33,11 +34,13 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const setUser = useAuthStore(state => state.setUser);
+
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: '123321@qq.com',
+      password: '123456',
     },
   });
 
@@ -54,10 +57,14 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
     setIsLoading(true);
     try {
       const response = await authService.login(data);
-      Alert.alert('Success', `Welcome back, ${response.user.username}!`);
+
+      // store user data in zustand
+      await setUser(response.user, response.token);
+
+      showSuccess('Success', `Welcome back, ${response.user.username}!`);
       onSuccess?.();
     } catch (error: any) {
-      Alert.alert('Login Failed', error.response?.data?.message || 'Invalid credentials');
+      showError('Login Failed', error.response?.data?.message || 'Invalid credentials');
     } finally {
       setIsLoading(false);
     }
@@ -67,29 +74,22 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
     setIsLoading(true);
     try {
       await authService.register(data);
-      Alert.alert('Success', 'Account created! Please login.', [
-        {
-          text: 'OK',
-          onPress: () => {
-            setMode('login');
-            loginForm.setValue('email', data.email);
-          },
-        },
-      ]);
+      showSuccess('Success', 'Account created! Please login.');
+      setTimeout(() => {
+        setMode('login');
+        loginForm.setValue('email', data.email);
+      }, 1500);
     } catch (error: any) {
-      Alert.alert('Registration Failed', error.response?.data?.message || 'Please try again');
+      showError('Registration Failed', error.response?.data?.message || 'Please try again');
     } finally {
       setIsLoading(false);
     }
   };
 
   const onSubmit = () => {
-    console.log('onSubmit called, mode:', mode);
     if (mode === 'login') {
-      console.log('Triggering login form submission');
       loginForm.handleSubmit(handleLogin)();
     } else {
-      console.log('Triggering register form submission');
       registerForm.handleSubmit(handleRegister)();
     }
   };

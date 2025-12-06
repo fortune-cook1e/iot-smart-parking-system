@@ -4,10 +4,10 @@
   "description": "",
   "private": true,
   "scripts": {
-    "mobile": "pnpm --filter mobile start",
+    "mobile": "pnpm --filter mobile dev",
     "server": "pnpm --filter server dev",
     "schemas": "pnpm --filter @iot-smart-parking-system/shared-schemas dev",
-    "dev": "pnpm --parallel --filter mobile --filter server dev",
+    "dev": "pnpm --parallel --filter mobile --filter server --filter @iot-smart-parking-system/shared-schemas dev",
     "dev:server": "pnpm --parallel --filter @iot-smart-parking-system/shared-schemas --filter server dev",
     "build:schemas": "pnpm --filter @iot-smart-parking-system/shared-schemas build",
     "lint": "eslint .",

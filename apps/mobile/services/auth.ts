@@ -7,40 +7,36 @@ import type {
 } from '@iot-smart-parking-system/shared-schemas';
 import { z } from 'zod';
 
-// API response type
-interface ApiResponse<T> {
-  code: number;
-  status: 'success' | 'error';
-  data?: T;
-  message: string;
-}
-
-interface LoginResponse {
+interface AuthResponse {
   user: UserResponse;
   token: string;
 }
 
 // Login
-export const login = async (credentials: z.infer<typeof LoginSchema>): Promise<LoginResponse> => {
-  const response = await apiClient.post<any, ApiResponse<LoginResponse>>(
-    '/auth/login',
-    credentials
-  );
+export const login = async (credentials: z.infer<typeof LoginSchema>): Promise<AuthResponse> => {
+  const { user, token } = await apiClient.post<any, AuthResponse>('/auth/login', credentials);
 
-  if (response.data?.token) {
+  if (token) {
     // Save token
-    await storage.setItem('auth_token', response.data.token);
+    await storage.setItem('auth_token', token);
   }
 
-  return response.data!;
+  return { user, token };
 };
 
 // Register
 export const register = async (
   userData: z.infer<typeof CreateUserSchema>
-): Promise<UserResponse> => {
-  const response = await apiClient.post<any, ApiResponse<UserResponse>>('/auth/register', userData);
-  return response.data!;
+): Promise<AuthResponse> => {
+  const { user, token } = await apiClient.post<any, AuthResponse>('/auth/register', userData);
+  if (token) {
+    // Save token
+    await storage.setItem('auth_token', token);
+  }
+  return {
+    user,
+    token,
+  };
 };
 
 // Logout
@@ -54,6 +50,6 @@ export const logout = async (): Promise<void> => {
 
 // Get current user
 export const getCurrentUser = async (): Promise<UserResponse> => {
-  const response = await apiClient.get<any, ApiResponse<UserResponse>>('/users/me');
-  return response.data!;
+  const user = await apiClient.get<any, UserResponse>('/users/me');
+  return user;
 };
