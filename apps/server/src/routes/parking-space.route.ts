@@ -130,7 +130,7 @@ const router: IRouter = Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/', authenticate, parkingSpaceController.getAllParkingSpacesHandler);
+router.get('/', parkingSpaceController.getAllParkingSpacesHandler);
 router.post('/', authenticate, parkingSpaceController.createParkingSpaceHandler);
 
 /**

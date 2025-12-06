@@ -1,12 +1,17 @@
 import express, { Application, Request, Response } from 'express';
+import { createServer } from 'http';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import userRoutes from './routes/user.route';
-import authenticateRoutes from './routes/authenticate.route';
+import authenticateRoutes from './routes/auth.route';
+import parkingSpaceRoutes from './routes/parking-space.route';
+import subscriptionRoutes from './routes/subscription.route';
+import sensorRoutes from './routes/sensor.route';
 import { swaggerSpec } from './config/swagger';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import { responseMiddleware } from './middleware/response.middleware';
+import { initializeWebSocket } from './config/socket';
 
 dotenv.config();
 
@@ -33,7 +38,10 @@ app.get('/health', (_req: Request, res: Response) => {
 
 // API Routes
 app.use('/api/users', userRoutes);
-app.use('/api/authenticate', authenticateRoutes);
+app.use('/api/auth', authenticateRoutes);
+app.use('/api/parking-spaces', parkingSpaceRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/sensors', sensorRoutes);
 
 // Swagger Documentation
 app.use(
@@ -49,9 +57,15 @@ app.use(
 app.use(notFoundHandler);
 app.use(errorHandler);
 
+// Create HTTP server and initialize WebSocket
+const httpServer = createServer(app);
+initializeWebSocket(httpServer);
+
 // Start server
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(`📚 API Documentation available at http://localhost:${PORT}/api-docs`);
+  console.log(`🔌 WebSocket server initialized`);
 });
 
 export default app;

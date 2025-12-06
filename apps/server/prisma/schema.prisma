@@ -28,6 +28,7 @@ model User {
 model ParkingSpace {
   id            String         @id @default(uuid())
   sensorId      String         @unique @map("sensor_id")
+  name          String?
   description   String?
   address       String         // Text address, e.g. "Building A, Floor 1, Spot 15, Beijing"
   latitude      Float          // Latitude coordinate

@@ -24,6 +24,7 @@ export const createParkingSpace = async (data: CreateParkingSpace) => {
     data: {
       sensorId: data.sensorId,
       description: data.description,
+      name: data.name ?? '',
       address: data.address,
       latitude: data.latitude,
       longitude: data.longitude,
@@ -57,6 +58,7 @@ export const getAllParkingSpaces = async (query: QueryParkingSpaces) => {
     radius,
     minPrice,
     maxPrice,
+    name,
     page = 1,
     pageSize = 10,
   } = query;
@@ -70,6 +72,13 @@ export const getAllParkingSpaces = async (query: QueryParkingSpaces) => {
   if (address) {
     where.address = {
       contains: address,
+      mode: 'insensitive',
+    };
+  }
+
+  if (name) {
+    where.name = {
+      contains: name,
       mode: 'insensitive',
     };
   }
