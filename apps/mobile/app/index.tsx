@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/auth';
+import { HelloWave } from '@/components/hello-wave';
 
 const { width, height } = Dimensions.get('window');
 
@@ -32,10 +33,10 @@ export default function WelcomeScreen() {
 
   useEffect(() => {
     // If already authenticated, navigate to the main page
-    if (isAuthenticated) {
-      router.replace('/(tabs)/parking');
-      return;
-    }
+    // if (isAuthenticated) {
+    //   router.replace('/(tabs)/parking');
+    //   return;
+    // }
 
     // Start animations
     Animated.parallel([
