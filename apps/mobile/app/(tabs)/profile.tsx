@@ -1,24 +1,23 @@
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/auth';
 import { showSuccess } from '@/utils/toast';
-import BasicInfo from '@/components/BasicInfo';
 import Subscriptions from '@/components/Subscriptions';
+import { useThemeColors } from '@/hooks/use-theme-color';
 
 export default function ProfileScreen() {
-  const router = useRouter();
   const { user, logout } = useAuthStore();
+  const theme = useThemeColors();
 
   const handleLogout = async () => {
     await logout();
     showSuccess('Logged out', 'See you soon!');
-    // router.replace('/');
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <LinearGradient
         colors={['#667eea', '#764ba2']}
         style={styles.header}
@@ -34,11 +33,11 @@ export default function ProfileScreen() {
         </View>
       </LinearGradient>
 
-      <View style={styles.content}>
-        {/* <BasicInfo /> */}
-
+      <View style={{ flex: 1, padding: 20 }}>
         <Subscriptions />
+      </View>
 
+      <View style={styles.logoutContainer}>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <LinearGradient
             colors={['#ff6b6b', '#ee5a6f']}
@@ -51,7 +50,7 @@ export default function ProfileScreen() {
           </LinearGradient>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -87,14 +86,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.9)',
   },
-  content: {
+  logoutContainer: {
     padding: 20,
+    paddingTop: 0,
   },
-
   logoutButton: {
     borderRadius: 15,
     overflow: 'hidden',
-    marginTop: 20,
   },
   logoutGradient: {
     flexDirection: 'row',

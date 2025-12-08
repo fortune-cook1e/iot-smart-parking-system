@@ -5,7 +5,7 @@ import { useAuthStore } from '@/store/auth';
 import { Stack, usePathname } from 'expo-router';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const PUBLIC_ROUTES = ['login', 'parking'];
@@ -56,14 +56,19 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     const inTabsGroup = segments[0] === '(tabs)';
     const inProfilePage = segments[1] === 'profile';
 
-    //  redirect to login if trying to access profile page
-    if (!isAuthenticated && inTabsGroup && inProfilePage) {
+    //  redirect to login if trying to access profile page (but not if we're already navigating away)
+    if (!isAuthenticated && inTabsGroup && inProfilePage && pathName !== '/login') {
+      // Use a small delay to avoid conflicts with logout navigation
+      // const timer = setTimeout(() => {
+      //   router.replace('/login');
+      // }, 100);
       router.replace('/login');
+      // return () => clearTimeout(timer);
     } else if (isAuthenticated && pathName === '/login') {
       // redirect to parking if logged in and trying to access login page
       router.push('/(tabs)/parking');
     }
-  }, [isAuthenticated, isLoading, segments]);
+  }, [isAuthenticated, isLoading, segments, pathName]);
 
   if (isLoading) {
     return (
@@ -73,7 +78,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  return <>{children}</>;
+  return null;
 }
 
 const styles = StyleSheet.create({
