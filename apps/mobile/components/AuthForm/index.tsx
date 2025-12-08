@@ -39,8 +39,8 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
-      email: '123321@qq.com',
-      password: '123456',
+      email: 'user@parking.com',
+      password: 'user123',
     },
   });
 
