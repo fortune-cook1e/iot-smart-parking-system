@@ -1,39 +1,72 @@
-import { Platform, StyleSheet, View, Text, Dimensions } from 'react-native';
+import { Platform, StyleSheet, Dimensions, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Fonts } from '@/constants/theme';
-import MapView, { Marker, MarkerSelectEvent, Region } from 'react-native-maps';
-import { getParkingSpaceList } from '@/services/parking-space';
-import { useEffect, useState } from 'react';
+import MapView, { Marker, MarkerSelectEvent } from 'react-native-maps';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { ParkingSpace } from '@iot-smart-parking-system/shared-schemas';
 import SearchableSelect, { SelectOption } from '@/components/SearchableSelect';
+import ParkingSpaceCard from '@/components/ParkingSpaceCard';
+import { showError, showSuccess } from '@/utils/toast';
+import {
+  deleteSubscriptionHandler,
+  createSubscriptionHandler,
+  checkSubscriptionHandler,
+} from '@/services/subscription';
+import { useParkingSpaces } from '@/hooks/use-parking-spaces';
+import { useAuthStore } from '@/store/auth';
+import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+import { useSocket, useParkingSpaceUpdates } from '@/hooks/use-socket';
+import { WebhookSensorData } from '@iot-smart-parking-system/shared-schemas/src/webhook.schema';
 
 const { height } = Dimensions.get('window');
 
-const isWeb = Platform.OS === 'web';
 const isIOS = Platform.OS === 'ios';
 const STOCKHOLM_COORDINATES = { latitude: 59.3293, longitude: 18.0686 };
 
 export default function Parking() {
-  const [parkingSpaces, setParkingSpaces] = useState<ParkingSpace[]>([]);
+  const { isAuthenticated } = useAuthStore();
+
   const [selectedParkingId, setSelectedParkingId] = useState<string>('');
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const [currentPosition, setCurrentPosition] = useState<{ latitude: number; longitude: number }>(
     STOCKHOLM_COORDINATES
   );
 
-  const getParkingSpaces = async () => {
-    const data = await getParkingSpaceList();
-    setParkingSpaces(data.parkingSpaces);
-  };
+  const { parkingSpaces, getCurrentParkingSpace, getParkingSpaces } = useParkingSpaces();
+  const { subscribe: socketSubscribe, unsubscribe: socketUnsubscribe, isConnected } = useSocket();
 
-  useEffect(() => {
-    getParkingSpaces();
-  }, []);
+  const selectedParking = useMemo(() => {
+    return parkingSpaces.find(space => space.id === selectedParkingId) || null;
+  }, [selectedParkingId, parkingSpaces]);
+
+  // FixMe: When user logins, existing subscriptions are not subscribed to socket
+  // Subscribe to all parking spaces when subscriptions load
+  // useEffect(() => {
+  //   if (isConnected && parkingSpaces.length > 0) {
+  //     parkingSpaces.forEach(parkingLot => {
+  //       socketSubscribe(parkingLot.id);
+  //     });
+  //   }
+  // }, [isConnected, parkingSpaces]);
+
+  // Listen for real-time parking space updates
+  useParkingSpaceUpdates(
+    useCallback(
+      (data: WebhookSensorData) => {
+        console.log('data changed....');
+        getParkingSpaces().then(() => {
+          console.log('New Data');
+        });
+      },
+      [parkingSpaces]
+    )
+  );
 
   // Convert parking spaces to select options
   const parkingOptions: SelectOption[] = parkingSpaces.map(space => ({
-    label: `${space.name || space.sensorId} - ${space.isOccupied ? '🔴 Occupied' : '🟢 Available'}`,
+    label: `${space.name} - ${space.isOccupied ? '🔴 Occupied' : '🟢 Available'}`,
     value: space.id,
   }));
 
@@ -48,7 +81,88 @@ export default function Parking() {
     }
   };
 
-  const selectedParking = parkingSpaces.find(space => space.id === selectedParkingId);
+  // Check subscription status when parking space is selected
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (selectedParkingId && isAuthenticated) {
+        try {
+          const result = await checkSubscriptionHandler(selectedParkingId);
+          setIsSubscribed(result.isSubscribed);
+        } catch (error) {
+          console.error('Failed to check subscription:', error);
+          setIsSubscribed(false);
+        }
+      } else {
+        setIsSubscribed(false);
+      }
+    };
+
+    checkSubscription();
+  }, [selectedParkingId, isAuthenticated]);
+
+  // Re-check subscription status when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      const recheckSubscription = async () => {
+        if (selectedParkingId && isAuthenticated) {
+          try {
+            const result = await checkSubscriptionHandler(selectedParkingId);
+            setIsSubscribed(result.isSubscribed);
+          } catch (error) {
+            console.error('Failed to recheck subscription:', error);
+          }
+        }
+      };
+
+      recheckSubscription();
+    }, [selectedParkingId, isAuthenticated])
+  );
+
+  const handleSubscribe = async (parkingSpace: ParkingSpace) => {
+    if (!isAuthenticated) {
+      Alert.alert('Authentication Required', 'Please log in to subscribe to parking spaces', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Log In',
+          onPress: () => router.push('/login'),
+        },
+      ]);
+      return;
+    }
+
+    try {
+      await createSubscriptionHandler(parkingSpace.id);
+      setIsSubscribed(true);
+      // Subscribe to socket updates
+      socketSubscribe(parkingSpace.id);
+      showSuccess('Subscribed successfully');
+    } catch (error) {
+      console.error('Failed to subscribe:', error);
+      showError('Failed to subscribe');
+    }
+  };
+
+  const handleUnsubscribe = async (parkingSpace: ParkingSpace) => {
+    Alert.alert('Unsubscribe', `Are you sure you want to unsubscribe from ${parkingSpace.name}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Unsubscribe',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            // Unsubscribe from socket updates
+            socketUnsubscribe(parkingSpace.id);
+            await deleteSubscriptionHandler(parkingSpace.id);
+            setIsSubscribed(false);
+            showSuccess('Unsubscribed successfully');
+          } catch (error) {
+            console.error('Failed to unsubscribe:', error);
+            showError('Failed to unsubscribe');
+          }
+        },
+      },
+    ]);
+  };
 
   const onMarkerSelect = (event: MarkerSelectEvent) => {
     const { coordinate } = event.nativeEvent;
@@ -77,33 +191,13 @@ export default function Parking() {
 
       {/* Selected Parking Info */}
       {selectedParking && (
-        <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>{selectedParking.name || selectedParking.sensorId}</Text>
-          <Text style={styles.infoAddress}>{selectedParking.address}</Text>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Status:</Text>
-            <Text
-              style={[
-                styles.infoValue,
-                { color: selectedParking.isOccupied ? '#ef4444' : '#10b981' },
-              ]}
-            >
-              {selectedParking.isOccupied ? 'Occupied' : 'Available'}
-            </Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Price:</Text>
-            <Text style={styles.infoValue}>{selectedParking.currentPrice} SEK/hr</Text>
-          </View>
-        </View>
-      )}
-
-      {isWeb && (
-        <View style={styles.webMapPlaceholder}>
-          <IconSymbol name="map" size={64} color="#667eea" />
-          <Text style={styles.webMapText}>Map View</Text>
-          <Text style={styles.webMapSubText}>Available on mobile devices</Text>
-        </View>
+        <ParkingSpaceCard
+          item={selectedParking}
+          onPressSubscribe={handleSubscribe}
+          onPressUnsubscribe={handleUnsubscribe}
+          isSubscribed={isSubscribed}
+          showFooter={true}
+        />
       )}
 
       {isIOS && (

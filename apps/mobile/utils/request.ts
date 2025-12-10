@@ -1,27 +1,12 @@
-import Constants from 'expo-constants';
 import axios from 'axios';
-import { Platform } from 'react-native';
 import { storage } from './storage';
 import { showError } from '@/utils/toast';
 import { ResponseCode } from '@iot-smart-parking-system/shared-schemas';
+import { getApiBaseUrl } from '@/utils/config';
 
 // determine API base URL based on environment
-const getApiBaseUrl = () => {
-  if (__DEV__) {
-    if (Platform.OS === 'web') {
-      console.log('Running on web platform in development mode');
-      return 'http://localhost:3000/api';
-    } else {
-      const localIp = Constants.expoConfig?.hostUri?.split(':')[0];
-      return `http://${localIp}:3000/api`;
-    }
-  } else {
-    // production domain
-    return 'https://your-production-api.com/api';
-  }
-};
 
-export const API_BASE_URL = getApiBaseUrl();
+export const API_BASE_URL = getApiBaseUrl() + '/api';
 
 // create axios instance
 export const apiClient = axios.create({
