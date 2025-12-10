@@ -1,15 +1,12 @@
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/auth';
 import { showSuccess } from '@/utils/toast';
 import Subscriptions from '@/components/Subscriptions';
-import { useThemeColors } from '@/hooks/use-theme-color';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
-  const theme = useThemeColors();
 
   const handleLogout = async () => {
     await logout();

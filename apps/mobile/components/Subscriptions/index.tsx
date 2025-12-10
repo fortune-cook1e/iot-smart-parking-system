@@ -1,6 +1,6 @@
 import { deleteSubscriptionHandler } from '@/services/subscription';
 import { useAuthStore } from '@/store/auth';
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,19 +13,74 @@ import {
 import { Subscription } from '@iot-smart-parking-system/shared-schemas';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Fonts } from '@/constants/theme';
-import { showError, showSuccess } from '@/utils/toast';
+import { showError, showSuccess, showInfo } from '@/utils/toast';
 import { useThemeColors } from '@/hooks/use-theme-color';
-import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import SubscriptionCard from '@/components/Subscriptions/SubscriptionCard';
 import { useSubscriptions } from '@/hooks/use-subscription';
+import { useFocusEffect } from '@react-navigation/native';
+import { useSocket, useParkingSpaceUpdates } from '@/hooks/use-socket';
+import { WebhookSensorData } from '@iot-smart-parking-system/shared-schemas/src/webhook.schema';
 
-export default function Subscriptions() {
+interface SubscriptionsProps {}
+
+export default function Subscriptions({}: SubscriptionsProps) {
   const { isAuthenticated } = useAuthStore();
   const [refreshing, setRefreshing] = useState(false);
   const colors = useThemeColors();
+  const { isConnected, subscribe, unsubscribe } = useSocket();
 
   const { loading, subscriptions, getSubscriptions, setLoading, setSubscriptions } =
     useSubscriptions();
+
+  // Subscribe to all parking spaces when subscriptions load
+  useEffect(() => {
+    if (isConnected && subscriptions.length > 0) {
+      subscriptions.forEach(sub => {
+        subscribe(sub.parkingSpaceId);
+      });
+    }
+  }, [isConnected, subscriptions.length]);
+
+  // Listen for parking space updates
+  useParkingSpaceUpdates(
+    useCallback(
+      (data: WebhookSensorData) => {
+        console.log('Parking space updated:', data);
+
+        // Update the subscription list with new data
+        setSubscriptions(prev =>
+          prev.map(sub =>
+            sub.parkingSpace.sensorId === data.sensorId
+              ? {
+                  ...sub,
+                  parkingSpace: {
+                    ...sub.parkingSpace,
+                    ...data,
+                  },
+                }
+              : sub
+          )
+        );
+
+        // Show notification
+        const space = subscriptions.find(s => s.parkingSpace.sensorId === data.sensorId);
+        if (space) {
+          const status = data.isOccupied ? '🚗 Occupied' : '✅ Available';
+          showInfo(`${space.parkingSpace.name}`, `Status: ${status}`);
+        }
+      },
+      [subscriptions, setSubscriptions]
+    )
+  );
+
+  // Reload data when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      if (isAuthenticated) {
+        getSubscriptions();
+      }
+    }, [isAuthenticated])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -42,6 +97,10 @@ export default function Subscriptions() {
         style: 'destructive',
         onPress: async () => {
           try {
+            // Unsubscribe from socket updates
+            unsubscribe(parkingSpace.id);
+
+            // Delete subscription from backend
             await deleteSubscriptionHandler(parkingSpace.id);
             setSubscriptions(prev => prev.filter(sub => sub.parkingSpaceId !== parkingSpace.id));
             showSuccess('Unsubscribed successfully');
@@ -78,35 +137,28 @@ export default function Subscriptions() {
   }
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <FlatList
-          data={subscriptions}
-          keyExtractor={item => item.id}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.primary}
-            />
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <IconSymbol name="bell.slash" size={64} color={colors.textSecondary} />
-              <Text style={[styles.emptyTitle, { color: colors.text }]}>No Subscriptions</Text>
-              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                Subscribe to parking spaces to get notified when they become available
-              </Text>
-            </View>
-          }
-          renderItem={({ item }) => (
-            <SubscriptionCard item={item} onPressUnsubscribe={handleUnsubscribe} />
-          )}
-        />
-      </SafeAreaView>
-    </SafeAreaProvider>
+    <FlatList
+      data={subscriptions}
+      keyExtractor={item => item.id}
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.listContent}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+      }
+      ListEmptyComponent={
+        <View style={styles.emptyContainer}>
+          <IconSymbol name="bell.slash" size={64} color={colors.textSecondary} />
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>No Subscriptions</Text>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+            Subscribe to parking spaces to get notified when they become available
+          </Text>
+        </View>
+      }
+      renderItem={({ item }) => (
+        <SubscriptionCard item={item} onPressUnsubscribe={handleUnsubscribe} />
+      )}
+    />
   );
 }
 

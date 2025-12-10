@@ -118,7 +118,7 @@ export default function SearchableSelect({
                 placeholderTextColor={colors.textSecondary}
                 value={searchText}
                 onChangeText={setSearchText}
-                autoFocus
+                // autoFocus
               />
               {searchText.length > 0 && (
                 <TouchableOpacity onPress={() => setSearchText('')}>
