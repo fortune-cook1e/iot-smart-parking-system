@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Demo - IoT Smart Parking System</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+          sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        color: white;
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+
+      .card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      .card h2 {
+        color: #667eea;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        padding: 15px;
+        border-radius: 10px;
+        background: #f5f5f5;
+      }
+
+      .status-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #ccc;
+        animation: pulse 2s infinite;
+      }
+
+      .status-dot.connected {
+        background: #4caf50;
+      }
+
+      .status-dot.disconnected {
+        background: #f44336;
+        animation: none;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+      }
+
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+        margin-right: 10px;
+        margin-bottom: 10px;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      button.secondary {
+        background: linear-gradient(135deg, #f44336 0%, #e91e63 100%);
+      }
+
+      button.success {
+        background: linear-gradient(135deg, #4caf50 0%, #8bc34a 100%);
+      }
+
+      .logs {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 20px;
+        border-radius: 10px;
+        max-height: 400px;
+        overflow-y: auto;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+      }
+
+      .log-entry {
+        margin-bottom: 8px;
+        padding: 8px;
+        border-left: 3px solid #667eea;
+        padding-left: 12px;
+      }
+
+      .log-entry.error {
+        border-left-color: #f44336;
+        background: rgba(244, 67, 54, 0.1);
+      }
+
+      .log-entry.success {
+        border-left-color: #4caf50;
+        background: rgba(76, 175, 80, 0.1);
+      }
+
+      .log-entry.info {
+        border-left-color: #2196f3;
+        background: rgba(33, 150, 243, 0.1);
+      }
+
+      .timestamp {
+        color: #888;
+        font-size: 0.85rem;
+      }
+
+      .parking-spaces {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .parking-card {
+        background: #f9f9f9;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 15px;
+        transition: all 0.3s;
+      }
+
+      .parking-card.subscribed {
+        border-color: #667eea;
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.1) 0%,
+          rgba(118, 75, 162, 0.1) 100%
+        );
+      }
+
+      .parking-card h3 {
+        margin-bottom: 10px;
+        color: #333;
+      }
+
+      .parking-status {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .parking-status.available {
+        background: #4caf50;
+        color: white;
+      }
+
+      .parking-status.occupied {
+        background: #f44336;
+        color: white;
+      }
+
+      .parking-price {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #667eea;
+        margin: 10px 0;
+      }
+
+      .parking-address {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 10px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .actions button {
+        flex: 1;
+        margin: 0;
+        padding: 8px 15px;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🚗 IoT Smart Parking System</h1>
+        <p>Real-time WebSocket Demo</p>
+      </div>
+
+      <!-- Connection Card -->
+      <div class="card">
+        <h2>🔌 Connection</h2>
+        <div class="status">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="statusText">Disconnected</span>
+        </div>
+
+        <div class="form-group">
+          <label for="serverUrl">Server URL</label>
+          <input
+            type="text"
+            id="serverUrl"
+            value="http://localhost:3000"
+            placeholder="http://localhost:3000"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="authToken">Authentication Token</label>
+          <input
+            type="text"
+            id="authToken"
+            placeholder="Paste your JWT token here"
+            value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI3NTk4ZTUzOS0wYWZjLTQwOGEtYjU2Zi0wYWRiMjc0YWI3MzAiLCJlbWFpbCI6InVzZXJAcGFya2luZy5jb20iLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzY1Mjg3MDczLCJleHAiOjE3NjU4OTE4NzN9.cV81m-0KlDqKajwkv9MzLSBtWyd8olEwZURu2-JvzGU"
+          />
+        </div>
+
+        <button id="connectBtn" class="success">Connect</button>
+        <button id="disconnectBtn" class="secondary" disabled>Disconnect</button>
+        <button id="clearLogsBtn">Clear Logs</button>
+      </div>
+
+      <!-- Parking Spaces Card -->
+      <div class="card">
+        <h2>🅿️ Parking Spaces</h2>
+        <div id="parkingSpaces" class="parking-spaces">
+          <p>Connect to server to load parking spaces...</p>
+        </div>
+      </div>
+
+      <!-- Simulator Card -->
+      <div class="card">
+        <h2>🎮 Simulator</h2>
+        <p style="margin-bottom: 15px; color: #666">Simulate parking space status changes</p>
+
+        <div class="form-group">
+          <label for="simulateSpaceId">Parking Space ID</label>
+          <input
+            type="text"
+            id="simulateSpaceId"
+            placeholder="Enter parking space ID"
+            value="1ccd8f43-365b-41fa-83c0-55b9732e6a46"
+          />
+        </div>
+
+        <button id="simulateOccupiedBtn">Simulate Occupied</button>
+        <button id="simulateAvailableBtn" class="success">Simulate Available</button>
+      </div>
+
+      <!-- Logs Card -->
+      <div class="card">
+        <h2>📋 Event Logs</h2>
+        <div class="logs" id="logs">
+          <div class="log-entry info">
+            <span class="timestamp">[--:--:--]</span> Waiting for connection...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let socket = null;
+      let subscribedSpaces = new Set();
+      let parkingSpaces = [];
+
+      const elements = {
+        connectBtn: document.getElementById('connectBtn'),
+        disconnectBtn: document.getElementById('disconnectBtn'),
+        clearLogsBtn: document.getElementById('clearLogsBtn'),
+        serverUrl: document.getElementById('serverUrl'),
+        authToken: document.getElementById('authToken'),
+        statusDot: document.getElementById('statusDot'),
+        statusText: document.getElementById('statusText'),
+        logs: document.getElementById('logs'),
+        parkingSpaces: document.getElementById('parkingSpaces'),
+        simulateSpaceId: document.getElementById('simulateSpaceId'),
+        simulateOccupiedBtn: document.getElementById('simulateOccupiedBtn'),
+        simulateAvailableBtn: document.getElementById('simulateAvailableBtn'),
+      };
+
+      // Logging function
+      function log(message, type = 'info') {
+        const timestamp = new Date().toLocaleTimeString();
+        const entry = document.createElement('div');
+        entry.className = `log-entry ${type}`;
+        entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+        elements.logs.appendChild(entry);
+        elements.logs.scrollTop = elements.logs.scrollHeight;
+      }
+
+      // Update connection status
+      function updateStatus(connected) {
+        if (connected) {
+          elements.statusDot.classList.add('connected');
+          elements.statusDot.classList.remove('disconnected');
+          elements.statusText.textContent = 'Connected';
+          elements.connectBtn.disabled = true;
+          elements.disconnectBtn.disabled = false;
+        } else {
+          elements.statusDot.classList.remove('connected');
+          elements.statusDot.classList.add('disconnected');
+          elements.statusText.textContent = 'Disconnected';
+          elements.connectBtn.disabled = false;
+          elements.disconnectBtn.disabled = true;
+        }
+      }
+
+      // Fetch parking spaces
+      async function fetchParkingSpaces() {
+        try {
+          const serverUrl = elements.serverUrl.value;
+          const token = elements.authToken.value;
+
+          const response = await fetch(`${serverUrl}/api/parking-spaces`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) throw new Error('Failed to fetch parking spaces');
+
+          const data = await response.json();
+          parkingSpaces = data.data.parkingSpaces;
+          renderParkingSpaces();
+          log(`Loaded ${parkingSpaces.length} parking spaces`, 'success');
+        } catch (error) {
+          log(`Error loading parking spaces: ${error.message}`, 'error');
+        }
+      }
+
+      // Render parking spaces
+      function renderParkingSpaces() {
+        if (parkingSpaces.length === 0) {
+          elements.parkingSpaces.innerHTML = '<p>No parking spaces available</p>';
+          return;
+        }
+
+        elements.parkingSpaces.innerHTML = parkingSpaces
+          .map(
+            space => `
+        <div class="parking-card ${subscribedSpaces.has(space.id) ? 'subscribed' : ''}" data-id="${space.id}">
+          <h3>${space.name || 'Parking Space'}</h3>
+          <div class="parking-status ${space.isOccupied ? 'occupied' : 'available'}">
+            ${space.isOccupied ? '🚗 Occupied' : '✅ Available'}
+          </div>
+          <div class="parking-price">${space.currentPrice} SEK/hour</div>
+          <div class="parking-address">📍 ${space.address}</div>
+          <div class="actions">
+            <button onclick="subscribeToSpace('${space.id}')" ${subscribedSpaces.has(space.id) ? 'disabled' : ''}>
+              ${subscribedSpaces.has(space.id) ? '✓ Subscribed' : 'Subscribe'}
+            </button>
+            ${
+              subscribedSpaces.has(space.id)
+                ? `
+              <button class="secondary" onclick="unsubscribeFromSpace('${space.id}')">Unsubscribe</button>
+            `
+                : ''
+            }
+          </div>
+        </div>
+      `
+          )
+          .join('');
+      }
+
+      // Subscribe to parking space
+      window.subscribeToSpace = function (spaceId) {
+        if (!socket) return;
+
+        socket.emit('subscribe:parking-space', spaceId);
+        subscribedSpaces.add(spaceId);
+        renderParkingSpaces();
+        log(`Subscribed to parking space: ${spaceId}`, 'success');
+      };
+
+      // Unsubscribe from parking space
+      window.unsubscribeFromSpace = function (spaceId) {
+        if (!socket) return;
+
+        socket.emit('unsubscribe:parking-space', spaceId);
+        subscribedSpaces.delete(spaceId);
+        renderParkingSpaces();
+        log(`Unsubscribed from parking space: ${spaceId}`, 'info');
+      };
+
+      // Connect to WebSocket
+      elements.connectBtn.addEventListener('click', () => {
+        const serverUrl = elements.serverUrl.value;
+        const token = elements.authToken.value;
+
+        if (!token) {
+          log('Please provide an authentication token', 'error');
+          return;
+        }
+
+        log(`Connecting to ${serverUrl}...`, 'info');
+
+        socket = io(serverUrl, {
+          auth: {
+            token: token,
+          },
+        });
+
+        socket.on('connect', () => {
+          log('✅ Connected to WebSocket server', 'success');
+          updateStatus(true);
+          fetchParkingSpaces();
+        });
+
+        socket.on('disconnect', () => {
+          log('❌ Disconnected from WebSocket server', 'error');
+          updateStatus(false);
+          subscribedSpaces.clear();
+          renderParkingSpaces();
+        });
+
+        socket.on('connect_error', error => {
+          log(`Connection error: ${error.message}`, 'error');
+          updateStatus(false);
+        });
+
+        socket.on('parking-space:updated', data => {
+          log(`🔔 Parking space updated: ${JSON.stringify(data)}`, 'success');
+
+          // Update local parking space data
+          const index = parkingSpaces.findIndex(s => s.id === data.id);
+          if (index !== -1) {
+            parkingSpaces[index] = { ...parkingSpaces[index], ...data };
+            renderParkingSpaces();
+          }
+        });
+      });
+
+      // Disconnect from WebSocket
+      elements.disconnectBtn.addEventListener('click', () => {
+        if (socket) {
+          socket.disconnect();
+          socket = null;
+          log('Disconnecting...', 'info');
+        }
+      });
+
+      // Clear logs
+      elements.clearLogsBtn.addEventListener('click', () => {
+        elements.logs.innerHTML = '';
+        log('Logs cleared', 'info');
+      });
+
+      // Simulate occupied
+      elements.simulateOccupiedBtn.addEventListener('click', async () => {
+        const spaceId = elements.simulateSpaceId.value;
+        if (!spaceId) {
+          log('Please enter a parking space ID', 'error');
+          return;
+        }
+
+        try {
+          const serverUrl = elements.serverUrl.value;
+          const token = elements.authToken.value;
+
+          const response = await fetch(`${serverUrl}/api/webhooks/sensor`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              parkingSpaceId: spaceId,
+              isOccupied: true,
+              sensorId: 'SENSOR_C04',
+            }),
+          });
+
+          if (!response.ok) throw new Error('Simulation failed');
+
+          log(`Simulated occupied status for space: ${spaceId}`, 'success');
+        } catch (error) {
+          log(`Simulation error: ${error.message}`, 'error');
+        }
+      });
+
+      // Simulate available
+      elements.simulateAvailableBtn.addEventListener('click', async () => {
+        const spaceId = elements.simulateSpaceId.value;
+        if (!spaceId) {
+          log('Please enter a parking space ID', 'error');
+          return;
+        }
+
+        try {
+          const serverUrl = elements.serverUrl.value;
+          const token = elements.authToken.value;
+
+          const response = await fetch(`${serverUrl}/api/webhooks/sensor`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              parkingSpaceId: spaceId,
+              isOccupied: false,
+              sensorId: 'SENSOR_C04',
+            }),
+          });
+
+          if (!response.ok) throw new Error('Simulation failed');
+
+          log(`Simulated available status for space: ${spaceId}`, 'success');
+        } catch (error) {
+          log(`Simulation error: ${error.message}`, 'error');
+        }
+      });
+    </script>
+  </body>
+</html>

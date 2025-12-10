@@ -5,7 +5,6 @@ import {
   type QueryParkingSpaces,
 } from '@iot-smart-parking-system/shared-schemas';
 import type { Prisma } from '@prisma/client';
-import { notifyParkingSpaceUpdate } from '../config/socket';
 import { AppError } from '../middleware/error.middleware';
 
 export const createParkingSpace = async (data: CreateParkingSpace) => {
@@ -167,16 +166,16 @@ export const updateParkingSpaceStatus = async (
   });
 
   // Notify subscribers about the status change
-  notifyParkingSpaceUpdate(updatedSpace.id, {
-    id: updatedSpace.id,
-    sensorId: updatedSpace.sensorId,
-    address: updatedSpace.address,
-    latitude: updatedSpace.latitude,
-    longitude: updatedSpace.longitude,
-    isOccupied: updatedSpace.isOccupied,
-    currentPrice: updatedSpace.currentPrice,
-    updatedAt: updatedSpace.updatedAt,
-  });
+  // notifyParkingSpaceUpdate(updatedSpace.id, {
+  //   id: updatedSpace.id,
+  //   sensorId: updatedSpace.sensorId,
+  //   address: updatedSpace.address,
+  //   latitude: updatedSpace.latitude,
+  //   longitude: updatedSpace.longitude,
+  //   isOccupied: updatedSpace.isOccupied,
+  //   currentPrice: updatedSpace.currentPrice,
+  //   updatedAt: updatedSpace.updatedAt,
+  // });
 
   return updatedSpace;
 };
