@@ -1,4 +1,4 @@
-import { LoginForm } from '@/components/login-form';
+import { LoginForm } from './login-form';
 import { IconCar } from '@tabler/icons-react';
 
 export default function Home() {

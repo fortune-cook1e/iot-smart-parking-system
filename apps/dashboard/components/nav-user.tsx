@@ -1,18 +1,11 @@
 'use client';
 
-import {
-  IconCreditCard,
-  IconDotsVertical,
-  IconLogout,
-  IconNotification,
-  IconUserCircle,
-} from '@tabler/icons-react';
+import { IconDotsVertical, IconLogout } from '@tabler/icons-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -25,14 +18,20 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useAuthStore } from '@/store/auth';
+import { authApi } from '@/services/auth';
 
 export function NavUser() {
   const { isMobile } = useSidebar();
-  const user = useAuthStore(state => state.user);
+  const { user, logout } = useAuthStore();
 
   if (!user) return null;
 
   const { email, username } = user;
+
+  const onLogout = async () => {
+    await authApi.logout();
+    logout();
+  };
 
   return (
     <SidebarMenu>
@@ -75,7 +74,7 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={onLogout}>
               <IconLogout />
               Log out
             </DropdownMenuItem>
