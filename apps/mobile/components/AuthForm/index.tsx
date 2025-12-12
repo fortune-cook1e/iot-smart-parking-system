@@ -58,8 +58,8 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
     try {
       const response = await authService.login(data);
 
-      // store user data in zustand
-      await setUser(response.user, response.token);
+      // store user data in zustand (using accessToken)
+      await setUser(response.user, response.accessToken);
 
       showSuccess('Success', `Welcome back, ${response.user.username}!`);
       onSuccess?.();

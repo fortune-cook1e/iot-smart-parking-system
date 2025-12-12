@@ -25,7 +25,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   // Set user information and token
   setUser: async (user: UserResponse, token: string) => {
-    await storage.setItem('auth_token', token);
+    await storage.setItem('access_token', token);
     set({
       user,
       token,
@@ -41,7 +41,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      await storage.removeItem('auth_token');
+      await storage.removeItem('access_token');
+      await storage.removeItem('refresh_token');
       set({
         user: null,
         token: null,
@@ -56,7 +57,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       set({ isLoading: true });
 
-      const token = await storage.getItem('auth_token');
+      const token = await storage.getItem('access_token');
       if (!token) {
         set({ isAuthenticated: false, isLoading: false });
         return false;
@@ -74,7 +75,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error) {
       console.error('Auth check failed:', error);
       // Token invalid, clear stored data
-      await storage.removeItem('auth_token');
+      await storage.removeItem('access_token');
+      await storage.removeItem('refresh_token');
       set({
         user: null,
         token: null,
