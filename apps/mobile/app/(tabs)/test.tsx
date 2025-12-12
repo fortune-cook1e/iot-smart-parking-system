@@ -51,6 +51,29 @@ export default function NotificationTest() {
     setScheduledCount(scheduled.length);
   };
 
+  const requireNotificationPermission = async () => {
+    try {
+      // Request notification permissions explicitly
+      const { status } = await Notifications.requestPermissionsAsync();
+
+      if (status === 'granted') {
+        // Permission granted, register for push notifications
+        const token = await registerForPushNotifications();
+        if (token) {
+          setExpoPushToken(token);
+        }
+        setIsEnabled(true);
+        alert('✅ Notification permissions granted!');
+      } else {
+        setIsEnabled(false);
+        alert('❌ Notification permissions denied. Please enable in Settings.');
+      }
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
+      alert('Failed to request notification permissions');
+    }
+  };
+
   useEffect(() => {
     refreshScheduledCount();
   }, []);
@@ -155,6 +178,14 @@ export default function NotificationTest() {
             await cancelAllNotifications();
             await refreshScheduledCount();
           }}
+        />
+
+        <View style={styles.spacer} />
+
+        <Button
+          title="🔔 Request Notification Permission"
+          color="#4CAF50"
+          onPress={requireNotificationPermission}
         />
       </View>
     </ScrollView>
