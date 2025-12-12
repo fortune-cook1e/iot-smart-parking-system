@@ -1,5 +1,6 @@
 import { Router, type IRouter } from 'express';
 import { login, register, logout } from '../controllers/authenticate.controller';
+import { refreshToken } from '../controllers/refresh.controller';
 import { authenticate } from '../middleware/auth.middleware';
 
 const router: IRouter = Router();
@@ -102,5 +103,47 @@ router.post('/register', register);
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/logout', authenticate, logout);
+
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Refresh access token
+ *     description: Get a new access token using a valid refresh token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         accessToken:
+ *                           type: string
+ *       401:
+ *         description: Invalid or expired refresh token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post('/refresh', refreshToken);
 
 export default router;

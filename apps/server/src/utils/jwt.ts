@@ -2,7 +2,10 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import { tokenBlacklist } from './token-blacklist';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const JWT_REFRESH_SECRET =
+  process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key-change-in-production';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m'; // Access token: 15 minutes
+const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d'; // Refresh token: 7 days
 
 export interface JwtPayload {
   userId: string;
@@ -22,6 +25,15 @@ export function generateToken(payload: JwtPayload): string {
 }
 
 /**
+ * Generate refresh JWT token
+ */
+export function generateRefreshToken(payload: JwtPayload): string {
+  return jwt.sign(payload, JWT_REFRESH_SECRET, {
+    expiresIn: JWT_REFRESH_EXPIRES_IN,
+  } as SignOptions);
+}
+
+/**
  * Verify JWT token
  */
 export function verifyToken(token: string): JwtPayload {
@@ -34,6 +46,22 @@ export function verifyToken(token: string): JwtPayload {
     return jwt.verify(token, JWT_SECRET) as JwtPayload;
   } catch (error) {
     throw new Error('Invalid or expired token');
+  }
+}
+
+/**
+ * Verify refresh JWT token
+ */
+export function verifyRefreshToken(token: string): JwtPayload {
+  try {
+    // Check if token is blacklisted (logged out)
+    if (tokenBlacklist.has(token)) {
+      throw new Error('Refresh token has been revoked');
+    }
+
+    return jwt.verify(token, JWT_REFRESH_SECRET) as JwtPayload;
+  } catch (error) {
+    throw new Error('Invalid or expired refresh token');
   }
 }
 

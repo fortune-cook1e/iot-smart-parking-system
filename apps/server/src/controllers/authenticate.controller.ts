@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../middleware/error.middleware';
 import { createUser, verifyUserCredentials } from '../services/user.service';
-import { generateToken, revokeToken } from '../utils/jwt';
+import { generateToken, generateRefreshToken, revokeToken } from '../utils/jwt';
 import {
   ResponseCode,
   LoginSchema,
@@ -29,14 +29,21 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       });
     }
 
-    const token = generateToken({
+    const payload = {
       userId: user.id,
       email: user.email,
       username: user.username,
-    });
+    };
+
+    const accessToken = generateToken(payload);
+    const refreshToken = generateRefreshToken(payload);
 
     res.success({
-      data: { token, user },
+      data: {
+        accessToken,
+        refreshToken,
+        user,
+      },
       message: 'Login successful',
     });
   } catch (e) {
