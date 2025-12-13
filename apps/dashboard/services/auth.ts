@@ -11,4 +11,8 @@ export const authApi = {
   login: async (credentials: LoginDto): Promise<LoginResponse> => {
     return apiClient.post('/auth/login', credentials);
   },
+
+  logout: async (): Promise<void> => {
+    return apiClient.post('/auth/logout');
+  },
 };
