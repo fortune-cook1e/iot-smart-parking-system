@@ -17,6 +17,10 @@ COPY tsconfig.base.json ./
 # ============================================
 FROM base AS dependencies
 
+# 配置 pnpm 使用淘宝镜像（解决 tensorflow 网络超时）
+RUN pnpm config set registry https://registry.npmmirror.com \
+    && pnpm config set @tensorflow:registry https://registry.npmmirror.com
+
 # 复制所有需要的包
 COPY packages ./packages
 COPY apps/server ./apps/server
@@ -29,9 +33,9 @@ RUN pnpm install --frozen-lockfile
 # ============================================
 FROM dependencies AS builder
 
-# 生成 Prisma Client
+# 生成 Prisma Client（使用显式 schema 路径）
 WORKDIR /app/apps/server
-RUN pnpm prisma:generate
+RUN pnpm prisma generate --schema=./prisma/schema.prisma
 
 # 构建 TypeScript
 RUN pnpm build
