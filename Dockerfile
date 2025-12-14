@@ -25,8 +25,11 @@ RUN pnpm config set registry https://registry.npmmirror.com \
 COPY packages ./packages
 COPY apps/server ./apps/server
 
-# 安装所有依赖（包括 dev）
-RUN pnpm install --frozen-lockfile
+# 安装所有依赖（包括 dev），设置网络超时和重试
+RUN pnpm install --frozen-lockfile \
+    --network-timeout 300000 \
+    --fetch-retries 3 \
+    || (echo "First install failed, retrying..." && pnpm install --frozen-lockfile)
 
 # ============================================
 # 构建阶段

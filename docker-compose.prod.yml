@@ -1,6 +1,4 @@
 # docker-compose.prod.yml
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -45,6 +43,12 @@ services:
         condition: service_healthy
     networks:
       - parking-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
     command: sh -c "pnpm prisma migrate deploy && node dist/index.js"
 
 volumes:

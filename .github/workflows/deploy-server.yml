@@ -51,17 +51,20 @@ jobs:
           username: ${{ secrets.ALIYUN_USERNAME }}
           password: ${{ secrets.ALIYUN_PASSWORD }}
           port: ${{ secrets.ALIYUN_PORT }}
+          command_timeout: 30m
           script: |
             cd ${{ secrets.DEPLOY_PATH }}
 
             # 停止旧容器
             docker compose -f docker-compose.prod.yml down
 
-            # 清理旧镜像
+            # 清理构建缓存和旧镜像（释放磁盘空间）
+            docker builder prune -f
             docker image prune -f
 
-            # 构建并启动新容器
-            docker compose -f docker-compose.prod.yml up -d --build
+            # 构建并启动新容器（使用内存限制）
+            DOCKER_BUILDKIT=1 docker compose -f docker-compose.prod.yml build --no-cache
+            docker compose -f docker-compose.prod.yml up -d
 
             # 等待服务启动
             sleep 15
