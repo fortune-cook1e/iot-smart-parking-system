@@ -63,7 +63,7 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/apps/server/node_modules/.prisma ./apps/server/node_modules/.prisma
 
 # 复制 ML 模型和静态文件
-COPY apps/server/parking_model ./apps/server/parking_model
+# COPY apps/server/parking_model ./apps/server/parking_model
 COPY apps/server/public ./apps/server/public
 
 # 设置工作目录
