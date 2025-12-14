@@ -1,8 +1,9 @@
 # Dockerfile
 FROM node:20-alpine AS base
 
-# 安装 pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# 安装指定版本的 pnpm（与你本地一致）
+ENV PNPM_VERSION=9.14.4
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
 # 设置工作目录
 WORKDIR /app
@@ -20,7 +21,7 @@ FROM base AS dependencies
 COPY packages ./packages
 COPY apps/server ./apps/server
 
-# 安装所有依赖
+# 安装所有依赖（包括 dev）
 RUN pnpm install --frozen-lockfile
 
 # ============================================
@@ -40,8 +41,9 @@ RUN pnpm build
 # ============================================
 FROM node:20-alpine AS production
 
-# 安装 pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# 安装指定版本的 pnpm
+ENV PNPM_VERSION=9.14.4
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
 WORKDIR /app
 
@@ -53,18 +55,23 @@ COPY tsconfig.base.json ./
 COPY packages ./packages
 COPY apps/server/package.json ./apps/server/
 
-# 只安装生产依赖
-RUN pnpm install --prod --frozen-lockfile
+# 安装所有依赖（先安装全部，然后用 prune）
+RUN pnpm install --frozen-lockfile
+
+# 使用 pnpm deploy 来获取生产依赖
+WORKDIR /app/apps/server
+RUN pnpm --filter server --prod deploy /tmp/production
+
+# 清理并复制生产依赖
+WORKDIR /app
+RUN rm -rf node_modules apps/server/node_modules && \
+  cp -R /tmp/production/node_modules ./apps/server/
 
 # 复制构建产物
 COPY --from=builder /app/apps/server/dist ./apps/server/dist
 COPY --from=builder /app/apps/server/prisma ./apps/server/prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/apps/server/node_modules/.prisma ./apps/server/node_modules/.prisma
-
-# 复制 ML 模型和静态文件
-# COPY apps/server/parking_model ./apps/server/parking_model
-COPY apps/server/public ./apps/server/public
 
 # 设置工作目录
 WORKDIR /app/apps/server
