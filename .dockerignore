@@ -1,0 +1,30 @@
+# .dockerignore
+node_modules
+dist
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+.git
+.github
+coverage
+
+# 排除其他应用
+apps/mobile
+apps/dashboard
+
+# 文档和截图
+docs
+screenshots
+README.md
+*.md
+
+# 测试文件
+*.test.ts
+*.spec.ts
+
+# 开发配置
+.eslintrc.js
+.prettierrc
+.editorconfig

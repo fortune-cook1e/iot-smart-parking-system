@@ -1,0 +1,76 @@
+# .github/workflows/deploy-server.yml
+name: Deploy Server to Aliyun
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - 'apps/server/**'
+      - 'packages/shared-schemas/**'
+      - 'docker-compose.prod.yml'
+      - 'Dockerfile'
+      - '.github/workflows/deploy-server.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          PORT=3000
+          NODE_ENV=production
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_EXPIRES_IN=7d
+          EOF
+
+      - name: Copy files to Aliyun server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.ALIYUN_HOST }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          password: ${{ secrets.ALIYUN_PASSWORD }}
+          port: ${{ secrets.ALIYUN_PORT }}
+          source: '.,!.git,!node_modules,!apps/mobile,!apps/dashboard,!docs,!screenshots'
+          target: ${{ secrets.DEPLOY_PATH }}
+          strip_components: 0
+
+      - name: Deploy with Docker Compose
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.ALIYUN_HOST }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          password: ${{ secrets.ALIYUN_PASSWORD }}
+          port: ${{ secrets.ALIYUN_PORT }}
+          script: |
+            cd ${{ secrets.DEPLOY_PATH }}
+
+            # 停止旧容器
+            docker-compose -f docker-compose.prod.yml down
+
+            # 清理旧镜像
+            docker image prune -f
+
+            # 构建并启动新容器
+            docker-compose -f docker-compose.prod.yml up -d --build
+
+            # 等待服务启动
+            sleep 15
+
+            # 检查服务状态
+            docker-compose -f docker-compose.prod.yml ps
+            docker-compose -f docker-compose.prod.yml logs --tail=50 server
+
+            # 健康检查
+            curl -f http://localhost:3000/health || exit 1
+
+            echo "✅ Deployment successful!"
