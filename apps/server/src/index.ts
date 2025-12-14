@@ -9,10 +9,12 @@ import authenticateRoutes from './routes/auth.route';
 import parkingSpaceRoutes from './routes/parking-space.route';
 import subscriptionRoutes from './routes/subscription.route';
 import webhookRoutes from './routes/webhook.route';
+import predictRoutes from './routes/prediction.route';
 import { swaggerSpec } from './config/swagger';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import { responseMiddleware } from './middleware/response.middleware';
 import { initializeWebSocket } from './config/socket';
+import { loadData, trainModel } from './ml';
 
 dotenv.config();
 
@@ -46,6 +48,7 @@ app.use('/api/auth', authenticateRoutes);
 app.use('/api/parking-spaces', parkingSpaceRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/webhooks', webhookRoutes);
+app.use('/api/predictions', predictRoutes);
 
 // Swagger Documentation
 app.use(
@@ -64,6 +67,11 @@ app.use(errorHandler);
 // Create HTTP server and initialize WebSocket
 const httpServer = createServer(app);
 initializeWebSocket(httpServer);
+
+(async () => {
+  const data = await loadData(path.join(__dirname, './assets/data.csv'));
+  await trainModel(data);
+})();
 
 // Start server
 httpServer.listen(PORT, () => {
