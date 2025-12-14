@@ -29,8 +29,7 @@ export default function Subscriptions({}: SubscriptionsProps) {
   const colors = useThemeColors();
   const { isConnected, subscribe, unsubscribe } = useSocket();
 
-  const { loading, subscriptions, getSubscriptions, setLoading, setSubscriptions } =
-    useSubscriptions();
+  const { loading, subscriptions, getSubscriptions, setSubscriptions } = useSubscriptions();
 
   // Subscribe to all parking spaces when subscriptions load
   useEffect(() => {
@@ -45,28 +44,35 @@ export default function Subscriptions({}: SubscriptionsProps) {
   useParkingSpaceUpdates(
     useCallback(
       (data: WebhookSensorData) => {
-        console.log('Parking space updated:', data);
+        // Check if this parking space is in user's subscriptions
+        const subscribedSpace = subscriptions.find(s => s.parkingSpace.sensorId === data.sensorId);
 
-        // Update the subscription list with new data
-        setSubscriptions(prev =>
-          prev.map(sub =>
-            sub.parkingSpace.sensorId === data.sensorId
-              ? {
-                  ...sub,
-                  parkingSpace: {
-                    ...sub.parkingSpace,
-                    ...data,
-                  },
-                }
-              : sub
-          )
-        );
+        if (subscribedSpace) {
+          console.log('🔔 Subscribed parking space updated:', data);
 
-        // Show notification
-        const space = subscriptions.find(s => s.parkingSpace.sensorId === data.sensorId);
-        if (space) {
+          // Update the subscription list with new data
+          setSubscriptions(prev =>
+            prev.map(sub =>
+              sub.parkingSpace.sensorId === data.sensorId
+                ? {
+                    ...sub,
+                    parkingSpace: {
+                      ...sub.parkingSpace,
+                      ...data,
+                    },
+                  }
+                : sub
+            )
+          );
+
+          // Show notification ONLY for subscribed parking spaces
           const status = data.isOccupied ? '🚗 Occupied' : '✅ Available';
-          showInfo(`${space.parkingSpace.name}`, `Status: ${status}`);
+
+          // Toast notification
+          showInfo(
+            `${subscribedSpace.parkingSpace.name}`,
+            `Status: ${status}, Price: $${data.currentPrice} SEK/hr`
+          );
         }
       },
       [subscriptions, setSubscriptions]

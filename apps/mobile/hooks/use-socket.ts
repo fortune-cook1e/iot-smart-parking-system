@@ -9,7 +9,6 @@ import {
   unsubscribeFromParking,
   onParkingSpaceUpdate,
 } from '@/config/socket';
-import { ParkingSpace } from '@iot-smart-parking-system/shared-schemas';
 
 export const useSocket = () => {
   const { isAuthenticated } = useAuthStore();

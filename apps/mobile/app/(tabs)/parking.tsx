@@ -30,34 +30,62 @@ export default function Parking() {
 
   const [selectedParkingId, setSelectedParkingId] = useState<string>('');
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [hasShownLoginPrompt, setHasShownLoginPrompt] = useState(false);
   const [currentPosition, setCurrentPosition] = useState<{ latitude: number; longitude: number }>(
     STOCKHOLM_COORDINATES
   );
 
-  const { parkingSpaces, getCurrentParkingSpace, getParkingSpaces } = useParkingSpaces();
-  const { subscribe: socketSubscribe, unsubscribe: socketUnsubscribe, isConnected } = useSocket();
+  const { parkingSpaces, getParkingSpaces } = useParkingSpaces();
+  const { subscribe, unsubscribe, isConnected } = useSocket();
 
   const selectedParking = useMemo(() => {
     return parkingSpaces.find(space => space.id === selectedParkingId) || null;
   }, [selectedParkingId, parkingSpaces]);
 
-  // FixMe: When user logins, existing subscriptions are not subscribed to socket
-  // Subscribe to all parking spaces when subscriptions load
-  // useEffect(() => {
-  //   if (isConnected && parkingSpaces.length > 0) {
-  //     parkingSpaces.forEach(parkingLot => {
-  //       socketSubscribe(parkingLot.id);
-  //     });
-  //   }
-  // }, [isConnected, parkingSpaces]);
+  // Show login prompt when user enters Parking tab (only once per session)
+  useFocusEffect(
+    useCallback(() => {
+      if (!isAuthenticated && !hasShownLoginPrompt) {
+        Alert.alert(
+          '🔔 Real-time Updates Available',
+          'Log in to enjoy real-time parking space updates and subscribe to your favorite spots!',
+          [
+            {
+              text: 'Later',
+              style: 'cancel',
+              onPress: () => setHasShownLoginPrompt(true),
+            },
+            {
+              text: 'Log In',
+              onPress: () => {
+                setHasShownLoginPrompt(true);
+                router.push('/login');
+              },
+            },
+          ]
+        );
+      }
+    }, [isAuthenticated, hasShownLoginPrompt])
+  );
 
-  // Listen for real-time parking space updates
+  // Subscribe to ALL parking spaces to get real-time updates in map view
+  useEffect(() => {
+    if (isConnected && parkingSpaces.length > 0) {
+      console.log('📡 Subscribing to all parking spaces for map updates');
+      parkingSpaces.forEach(parkingLot => {
+        subscribe(parkingLot.id);
+      });
+    }
+  }, [isConnected, parkingSpaces.length]);
+
+  // Listen for real-time parking space updates (NO notifications, just update data)
   useParkingSpaceUpdates(
     useCallback(
       (data: WebhookSensorData) => {
-        console.log('data changed....');
+        console.log('🔄 Parking space updated in map:', data.sensorId);
+        // Refresh parking spaces data to get latest status
         getParkingSpaces().then(() => {
-          console.log('New Data');
+          console.log('✅ Map data refreshed');
         });
       },
       [parkingSpaces]
@@ -134,7 +162,7 @@ export default function Parking() {
       await createSubscriptionHandler(parkingSpace.id);
       setIsSubscribed(true);
       // Subscribe to socket updates
-      socketSubscribe(parkingSpace.id);
+      subscribe(parkingSpace.id);
       showSuccess('Subscribed successfully');
     } catch (error) {
       console.error('Failed to subscribe:', error);
@@ -151,7 +179,7 @@ export default function Parking() {
         onPress: async () => {
           try {
             // Unsubscribe from socket updates
-            socketUnsubscribe(parkingSpace.id);
+            unsubscribe(parkingSpace.id);
             await deleteSubscriptionHandler(parkingSpace.id);
             setIsSubscribed(false);
             showSuccess('Unsubscribed successfully');

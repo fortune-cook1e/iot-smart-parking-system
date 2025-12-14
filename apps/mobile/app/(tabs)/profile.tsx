@@ -1,16 +1,23 @@
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Alert, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@/store/auth';
 import { showSuccess } from '@/utils/toast';
 import Subscriptions from '@/components/Subscriptions';
+import { useRouter } from 'expo-router';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
+  const router = useRouter();
 
   const handleLogout = async () => {
     await logout();
     showSuccess('Logged out', 'See you soon!');
+  };
+
+  const goNotificationTest = () => {
+    router.push('/notification-test');
   };
 
   return (
@@ -22,9 +29,9 @@ export default function ProfileScreen() {
         end={{ x: 1, y: 1 }}
       >
         <View style={styles.avatarContainer}>
-          <View style={styles.avatar}>
+          <Pressable style={styles.avatar} onPress={goNotificationTest}>
             <Ionicons name="person" size={60} color="#fff" />
-          </View>
+          </Pressable>
           <Text style={styles.username}>{user?.username}</Text>
           <Text style={styles.email}>{user?.email}</Text>
         </View>
