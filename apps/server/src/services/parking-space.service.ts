@@ -4,8 +4,9 @@ import {
   type UpdateParkingSpace,
   type QueryParkingSpaces,
 } from '@iot-smart-parking-system/shared-schemas';
-import type { Prisma } from '@prisma/client';
+
 import { AppError } from '../middleware/error.middleware';
+import { ParkingSpaceUpdateInput, ParkingSpaceWhereInput } from '../generated/prisma/models';
 
 export const createParkingSpace = async (data: CreateParkingSpace) => {
   const exisitingSpace = await prisma.parkingSpace.findUnique({
@@ -62,7 +63,7 @@ export const getAllParkingSpaces = async (query: QueryParkingSpaces) => {
     pageSize = 10,
   } = query;
 
-  const where: Prisma.ParkingSpaceWhereInput = {};
+  const where: ParkingSpaceWhereInput = {};
 
   if (isOccupied !== undefined) {
     where.isOccupied = isOccupied;
@@ -151,7 +152,7 @@ export const updateParkingSpaceStatus = async (
   isOccupied: boolean,
   currentPrice?: number
 ) => {
-  const updateData: Prisma.ParkingSpaceUpdateInput = {
+  const updateData: ParkingSpaceUpdateInput = {
     isOccupied,
     updatedAt: new Date(),
   };

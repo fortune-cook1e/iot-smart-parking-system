@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { ResponseCode } from '@iot-smart-parking-system/shared-schemas';
 import { z } from 'zod';
-import { Prisma } from '@prisma/client';
+import {
+  PrismaClientValidationError,
+  PrismaClientInitializationError,
+} from '@prisma/client/runtime/client';
 
 interface AppErrorConstructor {
   message: string;
@@ -69,7 +72,7 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     });
   }
 
-  if (err instanceof Prisma.PrismaClientInitializationError) {
+  if (err instanceof PrismaClientInitializationError) {
     // database cannot be connected
     return res.status(500).json({
       code: ResponseCode.FAILURE,
@@ -77,7 +80,7 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     });
   }
 
-  if (err instanceof Prisma.PrismaClientValidationError) {
+  if (err instanceof PrismaClientValidationError) {
     // parameters passed to Prisma Client are invalid
     return res.status(400).json({
       code: ResponseCode.FAILURE,
