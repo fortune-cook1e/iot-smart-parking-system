@@ -54,13 +54,13 @@ RUN apt-get update && apt-get install -y \
   ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
-# ⛔ 不启用 corepack
-# ⛔ 不需要 pnpm
+# ⛔ copy
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/server/node_modules ./apps/server/node_modules
 
 COPY --from=build /app/packages/shared-schemas/dist ./packages/shared-schemas/dist
+COPY --from=deps /app/packages/shared-schemas/node_modules ./packages/shared-schemas/node_modules
 COPY --from=deps /app/packages/shared-schemas/package.json ./packages/shared-schemas/
 
 COPY --from=build /app/apps/server/dist ./apps/server/dist
