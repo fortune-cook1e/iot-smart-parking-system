@@ -83,6 +83,8 @@ out
 .nuxt
 dist
 
+
+
 # Gatsby files
 .cache/
 # Comment in the public line in if your project uses Gatsby and not Next.js
@@ -200,3 +202,8 @@ __pycache__/
 *.json
 *.bin
 
+
+
+
+# Prisma generated client
+apps/server/src/generated/

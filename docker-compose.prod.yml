@@ -49,7 +49,7 @@ services:
           memory: 512M
         reservations:
           memory: 256M
-    command: sh -c "npx prisma migrate deploy && node dist/index.js"
+    command: node /dist/index.js
 
 volumes:
   postgres_data:
