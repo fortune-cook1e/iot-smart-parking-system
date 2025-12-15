@@ -13,6 +13,7 @@ import predictRoutes from './routes/prediction.route';
 import { swaggerSpec } from './config/swagger';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import { responseMiddleware } from './middleware/response.middleware';
+import { loggerMiddleware } from './middleware/logger.middleware';
 import { initializeWebSocket } from './config/socket';
 
 dotenv.config();
@@ -24,6 +25,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(loggerMiddleware);
 app.use(responseMiddleware);
 
 // Serve static files
