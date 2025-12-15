@@ -60,6 +60,7 @@ COPY --from=build /app/packages/shared-schemas/dist ./packages/shared-schemas/di
 COPY --from=deps /app/packages/shared-schemas/package.json ./packages/shared-schemas/
 
 COPY --from=build /app/apps/server/dist ./apps/server/dist
+COPY --from=deps /app/apps/server/prisma ./apps/server/prisma
 COPY --from=deps /app/apps/server/package.json ./apps/server/package.json
 
 WORKDIR /app/apps/server
