@@ -16,6 +16,12 @@ FROM base AS deps
 
 WORKDIR /app
 
+# Install OpenSSL for Prisma
+RUN apt-get update && apt-get install -y \
+  openssl \
+  ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
 # Copy dependency files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY tsconfig.base.json ./
@@ -66,13 +72,24 @@ RUN apt-get update && apt-get install -y \
 # Enable corepack (read packageManager)
 RUN corepack enable
 
-# Copy runtime files
+# Copy workspace config
+COPY --from=deps /app/package.json /app/pnpm-workspace.yaml ./
+
+# Copy all node_modules (includes prisma CLI)
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/server/node_modules ./apps/server/node_modules
+
+# Copy shared-schemas (runtime dependency)
+COPY --from=build /app/packages/shared-schemas/dist ./packages/shared-schemas/dist
+COPY --from=deps /app/packages/shared-schemas/package.json ./packages/shared-schemas/
+
+# Copy server files
 COPY --from=build /app/apps/server/dist ./apps/server/dist
+COPY --from=deps /app/apps/server/prisma ./apps/server/prisma
 COPY --from=deps /app/apps/server/package.json ./apps/server/package.json
 
 WORKDIR /app/apps/server
 
 EXPOSE 3000
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/index.js"]
