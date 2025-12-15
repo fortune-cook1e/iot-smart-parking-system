@@ -35,6 +35,9 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS build
 WORKDIR /app
 
+# Prisma 7 需要 DATABASE_URL 才能生成 Client（构建时占位，运行时会被覆盖）
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
+
 RUN pnpm -C packages/shared-schemas build
 RUN pnpm -C apps/server prisma:generate
 RUN pnpm -C apps/server build
