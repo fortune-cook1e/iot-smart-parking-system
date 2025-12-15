@@ -40,7 +40,13 @@ FROM deps AS build
 
 WORKDIR /app
 
-# Build server app
+# 1. Build shared-schemas first (server depends on it)
+RUN pnpm -C packages/shared-schemas build
+
+# 2. Generate Prisma Client
+RUN pnpm -C apps/server prisma:generate
+
+# 3. Build server app
 RUN pnpm -C apps/server build
 
 
