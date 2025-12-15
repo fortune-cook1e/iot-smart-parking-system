@@ -58,6 +58,7 @@ RUN apt-get update && apt-get install -y \
 # ⛔ 不需要 pnpm
 
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/server/node_modules ./apps/server/node_modules
 
 COPY --from=build /app/packages/shared-schemas/dist ./packages/shared-schemas/dist
 COPY --from=deps /app/packages/shared-schemas/package.json ./packages/shared-schemas/
