@@ -3,6 +3,6 @@
   "compilerOptions": {
     "outDir": "./dist"
   },
-  "include": ["src/**/*", "prisma/**/*"],
-  "exclude": ["node_modules", "dist", ".eslintrc.js"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "prisma", ".eslintrc.js"]
 }
