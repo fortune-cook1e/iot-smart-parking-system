@@ -64,6 +64,7 @@ COPY --from=deps /app/packages/shared-schemas/package.json ./packages/shared-sch
 
 COPY --from=build /app/apps/server/dist ./apps/server/dist
 COPY --from=deps /app/apps/server/prisma ./apps/server/prisma
+COPY --from=deps /app/apps/server/prisma.config.ts ./apps/server/prisma.config.ts
 COPY --from=deps /app/apps/server/package.json ./apps/server/package.json
 
 WORKDIR /app/apps/server
