@@ -34,6 +34,15 @@ jobs:
           DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?schema=public
           EOF
 
+          # apps/server/.env（应用运行时读取）
+          cat > apps/server/.env << EOF
+          PORT=3000
+          NODE_ENV=production
+          DATABASE_URL=postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@postgres:5432/${{ secrets.DB_NAME }}?schema=public
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}
+          EOF
+
       - name: Copy files to Aliyun server
         uses: appleboy/scp-action@v0.1.7
         with:
