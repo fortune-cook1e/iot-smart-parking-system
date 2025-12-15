@@ -14,7 +14,6 @@ import { swaggerSpec } from './config/swagger';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import { responseMiddleware } from './middleware/response.middleware';
 import { initializeWebSocket } from './config/socket';
-import { loadData, trainModel } from './ml';
 
 dotenv.config();
 
@@ -67,11 +66,6 @@ app.use(errorHandler);
 // Create HTTP server and initialize WebSocket
 const httpServer = createServer(app);
 initializeWebSocket(httpServer);
-
-(async () => {
-  const data = await loadData(path.join(__dirname, './assets/data.csv'));
-  await trainModel(data);
-})();
 
 // Start server
 httpServer.listen(PORT, () => {

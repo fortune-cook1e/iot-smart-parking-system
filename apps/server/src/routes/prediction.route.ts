@@ -1,8 +1,5 @@
 import { Router, type IRouter } from 'express';
-import {
-  availabilityPredictHandler,
-  occupancyPredictHandler,
-} from '../controllers/prediction.controller';
+import { availabilityPredictHandler } from '../controllers/prediction.controller';
 
 const router: IRouter = Router();
 
@@ -10,5 +7,4 @@ const router: IRouter = Router();
 router.post('/availability', availabilityPredictHandler);
 
 // based on tensorflow
-router.post('/occupancy', occupancyPredictHandler);
 export default router;
