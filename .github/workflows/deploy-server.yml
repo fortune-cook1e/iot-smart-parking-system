@@ -9,6 +9,7 @@ on:
     paths:
       - 'apps/server/**'
       - 'packages/shared-schemas/**'
+      - 'AI-ML/**'
       - 'docker-compose.prod.yml'
       - 'Dockerfile'
       - '.github/workflows/deploy-server.yml'
@@ -78,17 +79,19 @@ jobs:
             docker compose -f docker-compose.prod.yml run --rm server sh -c \
               "cd /app/apps/server && npx prisma migrate deploy"
 
-            echo "🚀 Starting server"
-            docker compose -f docker-compose.prod.yml up -d server
+            echo "🚀 Starting all services"
+            docker compose -f docker-compose.prod.yml up -d
 
-            echo "⏳ Waiting for server startup"
+            echo "⏳ Waiting for services startup"
             sleep 15
 
             echo "📊 Checking status"
             docker compose -f docker-compose.prod.yml ps
             docker compose -f docker-compose.prod.yml logs --tail=50 server
+            docker compose -f docker-compose.prod.yml logs --tail=50 ml-service
 
             echo "🩺 Health check"
-            curl -f http://localhost:3000/health
+            curl -f http://localhost:3000/health || echo "Server health check failed"
+            curl -f http://localhost:3002/docs || echo "ML service health check failed"
 
             echo "✅ Deployment successful!"

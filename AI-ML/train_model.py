@@ -1,4 +1,3 @@
-# train_model.py
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
@@ -8,7 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 import pickle
 
 # 1. Load CSV
-df = pd.read_csv("data.csv")
+df = pd.read_csv("training-demo.csv")
 
 # 2. Features & label
 X = df.drop(columns=["occupied"])

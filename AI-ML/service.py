@@ -18,3 +18,7 @@ def predict(data: dict):
     prob = model.predict_proba(df)[0][1]
     
     return {"occupied_probability": float(prob)}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=3002)

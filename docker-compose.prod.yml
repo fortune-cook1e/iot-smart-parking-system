@@ -51,6 +51,24 @@ services:
           memory: 256M
     command: node dist/index.js
 
+  ml-service:
+    build:
+      context: ./AI-ML
+      dockerfile: Dockerfile
+    image: ht2025-parking-ml:latest
+    container_name: ht2025-parking-ml
+    restart: always
+    ports:
+      - '3002:3002'
+    networks:
+      - parking-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
 volumes:
   postgres_data:
     driver: local
