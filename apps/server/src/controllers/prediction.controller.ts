@@ -8,13 +8,16 @@ import axios from 'axios';
  * Sensors can POST their status to this endpoint
  * Based on FastAPI service in AI-ML/predict_service.py
  */
+
+const AI_ML_SERVICE_URL = process.env.AI_ML_SERVICE_URL || 'http://localhost:3002';
+
 export const availabilityPredictHandler = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const response = await axios.post('http://localhost:9000/predict', req.body);
+    const response = await axios.post(`${AI_ML_SERVICE_URL}/predict`, req.body);
     const data = response.data;
 
     console.log('Prediction response data:', data);

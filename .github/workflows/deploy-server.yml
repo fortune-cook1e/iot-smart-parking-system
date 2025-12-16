@@ -33,6 +33,7 @@ jobs:
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}
           DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?schema=public
+          AI_ML_SERVICE_URL=${{ secrets.AI_ML_SERVICE_URL }}
           EOF
 
       - name: Copy files to Aliyun server

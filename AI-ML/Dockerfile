@@ -5,7 +5,12 @@ WORKDIR /app
 
 # Copy requirements and install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir \
+  --default-timeout=100 \
+  --retries 5 \
+  -i https://mirrors.aliyun.com/pypi/simple/ \
+  --trusted-host mirrors.aliyun.com \
+  -r requirements.txt
 
 # Copy application files
 COPY service.py .
