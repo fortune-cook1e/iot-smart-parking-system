@@ -56,4 +56,6 @@ const router: IRouter = Router();
  */
 router.post('/sensor', webhookController.sensorWebhookHandler);
 
+router.post('/notify', webhookController.notificationWebhookHandler);
+
 export default router;

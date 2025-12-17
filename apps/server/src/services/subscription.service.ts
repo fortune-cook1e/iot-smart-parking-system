@@ -106,3 +106,21 @@ export const checkSubscription = async (userId: string, parkingSpaceId: string) 
 
   return !!subscription;
 };
+
+export async function getSubscribersByParkingSpaceId(parkingSpaceId: string) {
+  return await prisma.subscription.findMany({
+    where: {
+      parkingSpaceId,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          // pushToken: true, // assumed pushToken field exists
+        },
+      },
+    },
+  });
+}

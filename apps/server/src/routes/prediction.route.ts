@@ -6,5 +6,4 @@ const router: IRouter = Router();
 // based on FastAPI provided from AI/ML
 router.post('/availability', availabilityPredictHandler);
 
-// based on tensorflow
 export default router;
