@@ -19,6 +19,7 @@ import { z } from 'zod';
 import * as authService from '@/services/auth';
 import { useAuthStore } from '@/store/auth';
 import { showSuccess, showError } from '@/utils/toast';
+import { getCurrentPushToken } from '@/utils/notification';
 
 type AuthMode = 'login' | 'register';
 
@@ -55,8 +56,12 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
 
   const handleLogin = async (data: LoginFormData) => {
     setIsLoading(true);
+    const token = (await getCurrentPushToken()) || '';
     try {
-      const response = await authService.login(data);
+      const response = await authService.login({
+        ...data,
+        pushToken: token,
+      });
 
       // store user data in zustand (using accessToken)
       await setUser(response.user, response.accessToken);
@@ -72,13 +77,18 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
 
   const handleRegister = async (data: RegisterFormData) => {
     setIsLoading(true);
+    const pushToken = (await getCurrentPushToken()) || '';
+
     try {
-      await authService.register(data);
+      const response = await authService.register({
+        ...data,
+        pushToken,
+      });
+
       showSuccess('Success', 'Account created! Please login.');
-      setTimeout(() => {
-        setMode('login');
-        loginForm.setValue('email', data.email);
-      }, 1500);
+      await setUser(response.user, response.accessToken);
+      showSuccess('Success', `Welcome, ${response.user.username}!`);
+      onSuccess?.();
     } catch (error: any) {
       showError('Registration Failed', error.response?.data?.message || 'Please try again');
     } finally {

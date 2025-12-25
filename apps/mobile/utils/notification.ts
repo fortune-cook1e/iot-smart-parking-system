@@ -91,6 +91,44 @@ export async function registerForPushNotifications(): Promise<string | null> {
 }
 
 /**
+ * Get the current device's Expo push token (without requesting permissions)
+ * @returns Expo push token or null if not available
+ */
+export async function getCurrentPushToken(): Promise<string | null> {
+  // Check if running on a real device
+  if (!Device.isDevice) {
+    console.warn('⚠️ Using simulator - push tokens unavailable');
+    return null;
+  }
+
+  try {
+    // Check if permissions are already granted
+    const { status } = await Notifications.getPermissionsAsync();
+
+    if (status !== 'granted') {
+      console.warn('Notification permissions not granted');
+      return null;
+    }
+
+    // Get project ID
+    const projectId =
+      Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+
+    if (!projectId) {
+      console.error('Project ID not found');
+      return null;
+    }
+
+    // Get the push token
+    const pushToken = await Notifications.getExpoPushTokenAsync({ projectId });
+    return pushToken.data;
+  } catch (error) {
+    console.error('Failed to get current push token:', error);
+    return null;
+  }
+}
+
+/**
  * Schedule a local notification
  * @param title - Notification title
  * @param body - Notification body

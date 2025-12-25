@@ -16,6 +16,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     //   googleMapsApiKey: 'process.env.GOOGLE_MAPS_API_KEY',
     // },
   },
+  extra: {
+    eas: {
+      projectId: '06d24bc4-c708-4ada-ac7e-24c76a23dbc6',
+    },
+  },
   android: {
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',

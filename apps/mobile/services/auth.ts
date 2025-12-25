@@ -1,11 +1,6 @@
 import { apiClient } from '@/utils/request';
 import { storage } from '@/utils/storage';
-import type {
-  LoginSchema,
-  CreateUserSchema,
-  UserResponse,
-} from '@iot-smart-parking-system/shared-schemas';
-import { z } from 'zod';
+import type { RegisterDto, UserResponse, LoginDto } from '@iot-smart-parking-system/shared-schemas';
 
 interface AuthResponse {
   user: UserResponse;
@@ -14,7 +9,7 @@ interface AuthResponse {
 }
 
 // Login
-export const login = async (credentials: z.infer<typeof LoginSchema>): Promise<AuthResponse> => {
+export const login = async (credentials: LoginDto): Promise<AuthResponse> => {
   const { user, accessToken, refreshToken } = await apiClient.post<any, AuthResponse>(
     '/auth/login',
     credentials
@@ -30,9 +25,7 @@ export const login = async (credentials: z.infer<typeof LoginSchema>): Promise<A
 };
 
 // Register
-export const register = async (
-  userData: z.infer<typeof CreateUserSchema>
-): Promise<AuthResponse> => {
+export const register = async (userData: RegisterDto): Promise<AuthResponse> => {
   const { user, accessToken, refreshToken } = await apiClient.post<any, AuthResponse>(
     '/auth/register',
     userData
@@ -50,9 +43,11 @@ export const register = async (
 };
 
 // Logout
-export const logout = async (): Promise<void> => {
+export const logout = async ({ pushToken }: { pushToken?: string }): Promise<void> => {
   try {
-    await apiClient.post('/auth/logout');
+    await apiClient.post('/auth/logout', {
+      pushToken,
+    });
   } finally {
     await storage.removeItem('access_token');
     await storage.removeItem('refresh_token');

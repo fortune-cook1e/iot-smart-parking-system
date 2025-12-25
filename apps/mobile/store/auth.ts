@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { UserResponse } from '@iot-smart-parking-system/shared-schemas';
 import * as authService from '@/services/auth';
 import { storage } from '@/utils/storage';
+import { getCurrentPushToken } from '@/utils/notification';
 
 interface AuthState {
   user: UserResponse | null;
@@ -37,7 +38,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // Logout
   logout: async () => {
     try {
-      await authService.logout();
+      const pushToken = (await getCurrentPushToken()) || '';
+      await authService.logout({
+        pushToken,
+      });
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
