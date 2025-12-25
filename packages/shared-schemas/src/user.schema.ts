@@ -44,9 +44,17 @@ export const UpdateUserSchema = z
 export const LoginSchema = CreateUserSchema.pick({
   email: true,
   password: true,
+}).extend({
+  pushToken: z.string().optional(),
 });
 
-export const RegisterSchema = CreateUserSchema;
+export const RegisterSchema = CreateUserSchema.pick({
+  username: true,
+  email: true,
+  password: true,
+}).extend({
+  pushToken: z.string().optional(),
+});
 
 // User response schema for frontend (without sensitive data)
 export const UserResponseSchema = UserSchema.omit({

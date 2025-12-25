@@ -256,3 +256,77 @@ export async function verifyUserCredentials(
     updatedAt: user.updatedAt,
   };
 }
+
+/**
+ * Add push token to user and remove it from all other users
+ */
+export async function addPushTokenToUser(
+  userId: string,
+  pushToken: string
+): Promise<void> {
+  if (!pushToken) return;
+
+  // Remove this token from all other users
+  await prisma.user.updateMany({
+    where: {
+      id: { not: userId },
+      pushTokens: { has: pushToken },
+    },
+    data: {
+      pushTokens: {
+        set: await prisma.user
+          .findMany({
+            where: {
+              id: { not: userId },
+              pushTokens: { has: pushToken },
+            },
+            select: { pushTokens: true },
+          })
+          .then(users =>
+            users.flatMap(u => u.pushTokens.filter(t => t !== pushToken))
+          ),
+      },
+    },
+  });
+
+  // Add token to current user if not already present
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { pushTokens: true },
+  });
+
+  if (user && !user.pushTokens.includes(pushToken)) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        pushTokens: {
+          push: pushToken,
+        },
+      },
+    });
+  }
+}
+
+/**
+ * Remove push token from user
+ */
+export async function removePushTokenFromUser(
+  userId: string,
+  pushToken: string
+): Promise<void> {
+  if (!pushToken) return;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { pushTokens: true },
+  });
+
+  if (user && user.pushTokens.includes(pushToken)) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        pushTokens: user.pushTokens.filter(t => t !== pushToken),
+      },
+    });
+  }
+}

@@ -14,3 +14,5 @@ export * from './parking-space.schema';
 
 // Subscription schemas
 export * from './subscription.schema';
+
+export * from './prediction.schema';
