@@ -11,6 +11,7 @@ export const UserSchema = z.object({
   email: z.string().email(),
   createdAt: z.date(),
   updatedAt: z.date(),
+  pushTokens: z.array(z.string()).optional().default([]),
 });
 
 // User creation schema (for registration)
@@ -24,6 +25,7 @@ export const CreateUserSchema = z.object({
     .string()
     .min(6, 'Password must be at least 6 characters')
     .max(100, 'Password must not exceed 100 characters'),
+  pushTokens: z.array(z.string()).optional().default([]),
 });
 
 // User update schema
@@ -32,6 +34,7 @@ export const UpdateUserSchema = z
     username: z.string().min(3).max(50).optional(),
     email: z.string().email().optional(),
     password: z.string().min(6).max(100).optional(),
+    pushTokens: z.array(z.string()).optional(),
   })
   .refine((data: Record<string, unknown>) => Object.keys(data).length > 0, {
     message: 'At least one field must be provided for update',
@@ -45,9 +48,9 @@ export const LoginSchema = CreateUserSchema.pick({
 
 export const RegisterSchema = CreateUserSchema;
 
-// User response schema (without sensitive data)
+// User response schema for frontend (without sensitive data)
 export const UserResponseSchema = UserSchema.omit({
-  // Exclude sensitive fields if needed
+  pushTokens: true, // Exclude push tokens from API responses
 });
 
 /**

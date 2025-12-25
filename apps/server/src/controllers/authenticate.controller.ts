@@ -53,8 +53,8 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 
 export async function register(req: Request, res: Response, next: NextFunction) {
   try {
-    const { email, password, username } = RegisterSchema.parse(req.body);
-    const newUser = await createUser({ email, username, password });
+    const { email, password, username, pushTokens = [] } = RegisterSchema.parse(req.body);
+    const newUser = await createUser({ email, username, password, pushTokens });
 
     res.success({
       data: newUser,

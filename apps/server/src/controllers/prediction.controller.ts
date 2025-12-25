@@ -24,7 +24,7 @@ export const availabilityPredictHandler = async (
 
     res.success({
       data: data,
-      message: 'Parking space status updated successfully',
+      message: 'Prediction successful',
     });
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {

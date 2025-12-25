@@ -118,7 +118,7 @@ export async function getSubscribersByParkingSpaceId(parkingSpaceId: string) {
           id: true,
           username: true,
           email: true,
-          // pushToken: true, // assumed pushToken field exists
+          pushTokens: true,
         },
       },
     },

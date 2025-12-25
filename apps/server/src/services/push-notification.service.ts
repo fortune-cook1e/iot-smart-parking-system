@@ -1,5 +1,6 @@
 import { Expo, ExpoPushMessage } from 'expo-server-sdk';
 import { logger } from '../utils/logger';
+import prisma from '../lib/prisma';
 
 const expo = new Expo();
 
@@ -50,4 +51,14 @@ export async function sendPushNotifications(
       });
     }
   }
+}
+
+export async function getUserPushTokens(userId: string): Promise<string[]> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      pushTokens: true,
+    },
+  });
+  return user?.pushTokens || [];
 }

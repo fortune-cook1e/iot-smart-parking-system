@@ -181,6 +181,7 @@ export async function updateUser(id: string, data: UpdateUserDto): Promise<UserR
     email?: string;
     password?: string;
     salt?: string;
+    pushTokens?: string[];
   } = {};
 
   if (data.username) updateData.username = data.username;
@@ -191,6 +192,10 @@ export async function updateUser(id: string, data: UpdateUserDto): Promise<UserR
     const salt = generateSalt();
     updateData.password = hashPassword(data.password, salt);
     updateData.salt = salt;
+  }
+
+  if (data.pushTokens) {
+    updateData.pushTokens = data.pushTokens;
   }
 
   const user = await prisma.user.update({

@@ -27,12 +27,15 @@ async function main() {
 
   const user = await prisma.user.upsert({
     where: { email: 'user@parking.com' },
-    update: {},
+    update: {
+      pushTokens: ['ExponentPushToken[phcIGEK9Y100LSCAWl3q0a]'],
+    },
     create: {
       username: 'testuser',
       email: 'user@parking.com',
       password: userPassword,
       salt: userSalt,
+      pushTokens: ['ExponentPushToken[phcIGEK9Y100LSCAWl3q0a]'],
     },
   });
 
