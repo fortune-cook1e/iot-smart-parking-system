@@ -15,7 +15,7 @@ export const initializeSocket = async () => {
   }
 
   try {
-    const token = await storage.getItem('auth_token');
+    const token = await storage.getItem('access_token');
 
     if (!token) {
       console.warn('No auth token found, cannot connect to socket');
