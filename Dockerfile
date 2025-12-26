@@ -67,6 +67,8 @@ COPY --from=build /app/apps/server/dist ./apps/server/dist
 COPY --from=deps /app/apps/server/prisma ./apps/server/prisma
 COPY --from=deps /app/apps/server/prisma.config.ts ./apps/server/prisma.config.ts
 COPY --from=deps /app/apps/server/package.json ./apps/server/package.json
+COPY --from=build /app/apps/server/src ./apps/server/src
+
 
 WORKDIR /app/apps/server
 
