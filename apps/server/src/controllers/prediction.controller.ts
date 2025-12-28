@@ -22,7 +22,7 @@ export const occupancyPredictHandler = async (req: Request, res: Response, next:
     const {
       sensorId,
       predictMinutesAhead,
-      currentTime = Date.now(),
+      currentTime = new Date(),
       latitude,
       longitude,
     } = req.body as FeOccupancyInput;
@@ -30,23 +30,29 @@ export const occupancyPredictHandler = async (req: Request, res: Response, next:
       longitude,
       latitude,
     });
+
     const weather = mappingWeatherCode(currentWeather.weathercode);
     const current = new Date(currentTime);
-    const predictTime = new Date(current.getTime() + predictMinutesAhead * 60000);
 
+    const predictTime = new Date(current.getTime() + predictMinutesAhead * 60000);
+    const dayOfWeek = predictTime.getUTCDay();
+    const hour = predictTime.getUTCHours();
+    const minutes = predictTime.getUTCMinutes();
+
+    // Prepare model input
     const modelBody: ModelOccupancyInput = {
       sensor_id: sensorId,
-      is_weekend: predictTime.getDay() === 0 || predictTime.getDay() === 6 ? 1 : 0,
-      hour: predictTime.getHours(),
-      day_of_week: predictTime.getDay() === 0 ? 7 : predictTime.getDay(),
+      is_weekend: dayOfWeek === 0 || dayOfWeek === 6 ? 1 : 0,
+      hour,
+      // For day_of_week, 0 = Monday, 6 = Sunday to adapt to model training
+      day_of_week: dayOfWeek === 0 ? 6 : dayOfWeek - 1,
       weather,
-      minute_bucket: Math.floor(predictTime.getMinutes() / 10) * 10,
+      // discretize minutes into 10-minute buckets
+      minute_bucket: Math.floor(minutes / 10) * 10,
     };
 
-    console.log({ modelBody, current, predictTime });
-
     const response = await axios.post(`${AI_ML_SERVICE_URL}/predict/occupancy`, modelBody);
-    console.log('Prediction response data:', response.data);
+    // console.log('Prediction response data:', response.data);
     const { occupied_probability } = response.data;
 
     res.success({
