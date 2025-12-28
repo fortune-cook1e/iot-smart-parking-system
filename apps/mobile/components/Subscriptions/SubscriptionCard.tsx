@@ -1,8 +1,11 @@
-import { ParkingSpace, Subscription } from '@iot-smart-parking-system/shared-schemas';
+import { Subscription } from '@iot-smart-parking-system/shared-schemas';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Fonts } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme-color';
+import { usePrediction } from '@/hooks/use-prediction';
+import { PredictionModal } from '@/components/PredictionModal';
+import { PredictionButton } from '@/components/PredictionButton';
 
 interface SubscriptionCardProps {
   item: Subscription;
@@ -11,6 +14,7 @@ interface SubscriptionCardProps {
 
 const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ item, onPressUnsubscribe }) => {
   const colors = useThemeColors();
+  const { showPrediction, predictionData, handlePredict, closePrediction } = usePrediction();
 
   if (!item) return null;
 
@@ -75,6 +79,26 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ item, onPressUnsubs
           {item.parkingSpace.currentPrice} SEK/hr
         </Text>
       </View>
+
+      {/* Prediction Button */}
+      <PredictionButton
+        onPress={() =>
+          handlePredict({
+            sensorId: item.parkingSpace.sensorId,
+            latitude: item.parkingSpace.latitude,
+            longitude: item.parkingSpace.longitude,
+          })
+        }
+      />
+
+      {/* Prediction Modal */}
+      <PredictionModal
+        visible={showPrediction}
+        loading={predictionData.loading}
+        error={predictionData.error}
+        probability={predictionData.probability}
+        onClose={closePrediction}
+      />
 
       {/* Footer */}
       <View style={styles.cardFooter}>

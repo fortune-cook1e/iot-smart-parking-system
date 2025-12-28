@@ -3,6 +3,9 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Fonts } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme-color';
+import { usePrediction } from '@/hooks/use-prediction';
+import { PredictionModal } from '@/components/PredictionModal';
+import { PredictionButton } from '@/components/PredictionButton';
 
 interface ParkingSpaceCardProps {
   item: ParkingSpace;
@@ -20,9 +23,7 @@ const ParkingSpaceCard: React.FC<ParkingSpaceCardProps> = ({
   showFooter = true,
 }) => {
   const colors = useThemeColors();
-
-  // Todo: 1.Check subscription status inside the component
-  //       2. Handle subscribe/unsubscribe actions inside the component
+  const { showPrediction, predictionData, handlePredict, closePrediction } = usePrediction();
 
   if (!item) return null;
 
@@ -82,6 +83,26 @@ const ParkingSpaceCard: React.FC<ParkingSpaceCardProps> = ({
           {item.currentPrice} SEK/hr
         </Text>
       </View>
+
+      {/* Prediction Button */}
+      <PredictionButton
+        onPress={() =>
+          handlePredict({
+            sensorId: item.sensorId,
+            latitude: item.latitude,
+            longitude: item.longitude,
+          })
+        }
+      />
+
+      {/* Prediction Modal */}
+      <PredictionModal
+        visible={showPrediction}
+        loading={predictionData.loading}
+        error={predictionData.error}
+        probability={predictionData.probability}
+        onClose={closePrediction}
+      />
 
       {/* Footer - Subscribe/Unsubscribe */}
       {showFooter && (
