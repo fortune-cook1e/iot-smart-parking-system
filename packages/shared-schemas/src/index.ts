@@ -16,3 +16,5 @@ export * from './parking-space.schema';
 export * from './subscription.schema';
 
 export * from './prediction.schema';
+
+export * from './weather.schema';
