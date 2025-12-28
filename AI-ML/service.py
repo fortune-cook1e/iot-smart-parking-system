@@ -9,7 +9,7 @@ with open("parking_model.pkl", "rb") as f:
 
 app = FastAPI()
 
-@app.post("/predict")
+@app.post("/predict/occupancy")
 def predict(data: dict):
     # transform data from Frontend to DataFrame
     df = pd.DataFrame([data])
