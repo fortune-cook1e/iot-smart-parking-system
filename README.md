@@ -122,11 +122,6 @@ pnpm --filter server add -D jest @types/jest
 3. Test your changes before committing
 4. Keep dependencies up to date
 
-## Preview
-
-![home](./screenshots/home.PNG)
-![Parking](./screenshots/parking.PNG)
-
 ### Demo Video
 
 https://private-user-images.githubusercontent.com/29733380/530798908-767aa198-3d44-4c37-b058-83441419e47f.mp4?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NjcwMzM5MzgsIm5iZiI6MTc2NzAzMzYzOCwicGF0aCI6Ii8yOTczMzM4MC81MzA3OTg5MDgtNzY3YWExOTgtM2Q0NC00YzM3LWIwNTgtODM0NDE0MTllNDdmLm1wND9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTEyMjklMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUxMjI5VDE4NDAzOFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTNhNTFjOWUxNTIxODVlYTc4ZWYzMTY2YmQ1ZWNlYWJmZjhiYmRlOTdhYjVjYTcxYjEzNzYyNmYwYTgzZDlhNWQmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.IO9eBPakIDKPMPBJqZG3FBzCWV3zrnuH2YL1FJlSeM0
