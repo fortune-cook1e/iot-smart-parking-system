@@ -124,8 +124,7 @@ pnpm --filter server add -D jest @types/jest
 
 ## Preview
 
-![home](./screenshots/home.PNG)
-![Parking](./screenshots/parking.PNG)
+<video src="./screenshots/recording.mp4" controls width="300"></video>
 
 ## 📄 License
 
