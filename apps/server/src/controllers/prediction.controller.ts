@@ -22,7 +22,7 @@ export const occupancyPredictHandler = async (req: Request, res: Response, next:
     const {
       sensorId,
       predictMinutesAhead,
-      currentTime = new Date(),
+      currentTime = Date.now(),
       latitude,
       longitude,
     } = req.body as FeOccupancyInput;
@@ -34,7 +34,7 @@ export const occupancyPredictHandler = async (req: Request, res: Response, next:
     const weather = mappingWeatherCode(currentWeather.weathercode);
     const current = new Date(currentTime);
 
-    const predictTime = new Date(current.getTime() + predictMinutesAhead * 60000);
+    const predictTime = new Date(current.getTime() + predictMinutesAhead * 1000 * 60);
     const dayOfWeek = predictTime.getUTCDay();
     const hour = predictTime.getUTCHours();
     const minutes = predictTime.getUTCMinutes();
@@ -51,7 +51,7 @@ export const occupancyPredictHandler = async (req: Request, res: Response, next:
       minute_bucket: Math.floor(minutes / 10) * 10,
     };
 
-    const response = await axios.post(`${AI_ML_SERVICE_URL}/predict/occupancy`, modelBody);
+    const response = await axios.post(`${AI_ML_SERVICE_URL}/predictions/occupancy`, modelBody);
     // console.log('Prediction response data:', response.data);
     const { occupied_probability } = response.data;
 
