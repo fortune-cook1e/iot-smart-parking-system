@@ -4,7 +4,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Fonts } from '@/constants/theme';
 import MapView, { Marker, MarkerSelectEvent } from 'react-native-maps';
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { ParkingSpace } from '@iot-smart-parking-system/shared-schemas';
+import { ParkingSpace, WebhookSensorData } from '@iot-smart-parking-system/shared-schemas';
 import SearchableSelect, { SelectOption } from '@/components/SearchableSelect';
 import ParkingSpaceCard from '@/components/ParkingSpaceCard';
 import { showError, showSuccess } from '@/utils/toast';
@@ -18,7 +18,6 @@ import { useAuthStore } from '@/store/auth';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSocket, useParkingSpaceUpdates } from '@/hooks/use-socket';
-import { WebhookSensorData } from '@iot-smart-parking-system/shared-schemas/src/webhook.schema';
 
 const { height } = Dimensions.get('window');
 

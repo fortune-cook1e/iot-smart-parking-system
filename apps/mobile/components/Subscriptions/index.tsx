@@ -10,7 +10,7 @@ import {
   RefreshControl,
   Alert,
 } from 'react-native';
-import { Subscription } from '@iot-smart-parking-system/shared-schemas';
+import { Subscription, WebhookSensorData } from '@iot-smart-parking-system/shared-schemas';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Fonts } from '@/constants/theme';
 import { showError, showSuccess, showInfo } from '@/utils/toast';
@@ -19,7 +19,6 @@ import SubscriptionCard from '@/components/Subscriptions/SubscriptionCard';
 import { useSubscriptions } from '@/hooks/use-subscription';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSocket, useParkingSpaceUpdates } from '@/hooks/use-socket';
-import { WebhookSensorData } from '@iot-smart-parking-system/shared-schemas/src/webhook.schema';
 
 interface SubscriptionsProps {}
 

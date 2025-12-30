@@ -1,4 +1,3 @@
-import { WebhookSensorData } from './../../../packages/shared-schemas/src/webhook.schema';
 import { useEffect, useState, useCallback } from 'react';
 import { useAuthStore } from '@/store/auth';
 import {
@@ -9,6 +8,7 @@ import {
   unsubscribeFromParking,
   onParkingSpaceUpdate,
 } from '@/config/socket';
+import { WebhookSensorData } from '@iot-smart-parking-system/shared-schemas';
 
 export const useSocket = () => {
   const { isAuthenticated } = useAuthStore();
