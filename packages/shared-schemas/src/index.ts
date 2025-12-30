@@ -18,3 +18,4 @@ export * from './subscription.schema';
 export * from './prediction.schema';
 
 export * from './weather.schema';
+export * from './webhook.schema';
