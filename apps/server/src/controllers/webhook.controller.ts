@@ -39,6 +39,7 @@ export const sensorWebhookHandler = async (req: Request, res: Response, next: Ne
       // Prepare push notification tokens
       if (pushTokens.length > 0) {
         const statusText = isOccupied ? 'occupied' : 'available';
+        console.log(`Sending push notifications to tokens: ${pushTokens.join(', ')}`);
         await sendPushNotifications(pushTokens, {
           title: 'Parking Space Update',
           body: `Parking space ${parkingSpace.name} is now ${statusText}.`,
