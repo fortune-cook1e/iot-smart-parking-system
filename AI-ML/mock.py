@@ -52,7 +52,7 @@ sensor_id = "SENSOR_C04"
 weathers = ["sunny", "cloudy", "rainy", "windy"]
 
 # Keep dataset size around this number (sample evenly across the full date range)
-max_samples = 2000
+max_samples = 400
 
 # Generate data from 2025-12-17 to 2026-01-05 (inclusive)
 start_time = datetime(2025, 12, 17, 0, 0, 0)
