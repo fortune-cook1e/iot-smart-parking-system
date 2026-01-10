@@ -4,7 +4,7 @@ import { storage } from './storage';
 import { ResponseCode } from '@iot-smart-parking-system/shared-schemas';
 
 // determine API base URL based on environment
-export const apiUrl = process.env.API_BASE_URL || 'http://localhost:3000';
+export const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
 
 // create axios instance
 export const apiClient = axios.create({
