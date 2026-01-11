@@ -14,7 +14,7 @@ import pickle
 # =========================
 # 1. Load snapshot data
 # =========================
-df = pd.read_csv("parking_snapshot_training.csv")
+df = pd.read_csv("parking_snapshots.csv")
 
 # =========================
 # 2. Features & label

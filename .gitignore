@@ -197,6 +197,8 @@ __pycache__/
 *$py.class
 .pytest_cache/
 parking_snapshot_training.csv
+parking_events.csv
+parking_snapshots.csv
 
 
 # TensorFlow.js model
