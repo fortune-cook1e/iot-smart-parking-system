@@ -62,3 +62,18 @@ model Subscription {
   @@map("subscriptions")
 }
 
+// Parking event model for tracking vehicle arrivals and departures
+model ParkingEvent {
+  id        String   @id @default(uuid())
+  sensorId  String   @map("sensor_id")
+  eventType String   @map("event_type") // "occupied" or "available"
+  eventTime DateTime @map("event_time")
+  weather   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([sensorId])
+  @@index([eventTime])
+  @@index([sensorId, eventTime])
+  @@map("parking_events")
+}
+

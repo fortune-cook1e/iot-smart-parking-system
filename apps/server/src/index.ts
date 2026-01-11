@@ -7,6 +7,7 @@ import path from 'path';
 import userRoutes from './routes/user.route';
 import authenticateRoutes from './routes/auth.route';
 import parkingSpaceRoutes from './routes/parking-space.route';
+import parkingEventsRoutes from './routes/parking-events.route';
 import subscriptionRoutes from './routes/subscription.route';
 import webhookRoutes from './routes/webhook.route';
 import predictRoutes from './routes/prediction.route';
@@ -47,6 +48,7 @@ app.get('/health', (_req: Request, res: Response) => {
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authenticateRoutes);
 app.use('/api/parking-spaces', parkingSpaceRoutes);
+app.use('/api/parking-events', parkingEventsRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/predictions', predictRoutes);
