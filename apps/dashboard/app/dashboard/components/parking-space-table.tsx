@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 import {
   IconChevronDown,
@@ -60,20 +61,26 @@ import { ParkingSpaceDetailDialog } from './parking-space-detail-dialog';
 const createColumns = (
   onEdit: (parkingSpace: ParkingSpace) => void,
   onView: (parkingSpace: ParkingSpace) => void,
-  onDeleted: () => void
+  onDeleted: () => void,
+  onNameClick: (sensorId: string) => void
 ): ColumnDef<ParkingSpace>[] => [
   {
     accessorKey: 'name',
     header: () => <div className="font-semibold">Name</div>,
     cell: ({ row }) => (
-      <div className="flex items-center gap-2">
+      <div
+        className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+        onClick={() => onNameClick(row.original.sensorId)}
+      >
         <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
           <span className="text-primary text-sm font-bold">
             {row.original.name?.[0]?.toUpperCase() || 'P'}
           </span>
         </div>
         <div className="flex flex-col">
-          <span className="font-medium">{row.original.name || 'Unnamed'}</span>
+          <span className="font-medium text-primary hover:underline">
+            {row.original.name || 'Unnamed'}
+          </span>
           <span className="text-muted-foreground text-xs">ID: {row.original.sensorId}</span>
         </div>
       </div>
@@ -145,8 +152,8 @@ const createColumns = (
       return (
         <div className="text-right">
           <div className="inline-flex items-baseline gap-0.5 rounded-md bg-primary/5 px-2.5 py-1">
-            <span className="text-muted-foreground text-xs">$</span>
             <span className="text-lg font-semibold">{row.original.currentPrice.toFixed(2)}</span>
+            <span className="text-muted-foreground text-xs">SEK</span>
           </div>
         </div>
       );
@@ -169,6 +176,7 @@ const createColumns = (
 ];
 
 export function ParkingSpaceTable() {
+  const router = useRouter();
   const [data, setData] = useState<ParkingSpace[]>([]);
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -218,7 +226,11 @@ export function ParkingSpaceTable() {
     loadData();
   };
 
-  const columns = createColumns(handleEdit, handleView, handleDeleted);
+  const handleNameClick = (sensorId: string) => {
+    router.push(`/dashboard/parking-space/${sensorId}`);
+  };
+
+  const columns = createColumns(handleEdit, handleView, handleDeleted, handleNameClick);
 
   const table = useReactTable({
     data,
@@ -263,27 +275,6 @@ export function ParkingSpaceTable() {
           <Label htmlFor="view-selector" className="sr-only">
             View
           </Label>
-          <Select defaultValue="outline">
-            <SelectTrigger className="flex w-fit @4xl/main:hidden" size="sm" id="view-selector">
-              <SelectValue placeholder="Select a view" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="outline">Outline</SelectItem>
-              <SelectItem value="past-performance">Past Performance</SelectItem>
-              <SelectItem value="key-personnel">Key Personnel</SelectItem>
-              <SelectItem value="focus-documents">Focus Documents</SelectItem>
-            </SelectContent>
-          </Select>
-          <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
-            <TabsTrigger value="outline">Outline</TabsTrigger>
-            <TabsTrigger value="past-performance">
-              Past Performance <Badge variant="secondary">3</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="key-personnel">
-              Key Personnel <Badge variant="secondary">2</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
-          </TabsList>
 
           <div className="flex items-center gap-2">
             <DropdownMenu>
