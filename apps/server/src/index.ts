@@ -11,6 +11,7 @@ import parkingEventsRoutes from './routes/parking-events.route';
 import subscriptionRoutes from './routes/subscription.route';
 import webhookRoutes from './routes/webhook.route';
 import predictRoutes from './routes/prediction.route';
+import aiChatRoutes from './routes/ai-chat.route';
 import { swaggerSpec } from './config/swagger';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import { responseMiddleware } from './middleware/response.middleware';
@@ -52,6 +53,7 @@ app.use('/api/parking-events', parkingEventsRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/predictions', predictRoutes);
+app.use('/api/ai-chat', aiChatRoutes);
 
 // Swagger Documentation
 app.use(
