@@ -1,131 +1,175 @@
 # IoT Smart Parking System
 
-Modern smart parking management system with React Native mobile app and Node.js backend.
+**Monorepo** for a smart parking system: **Mobile App**, **Admin Dashboard**, **Backend API** (Socket.IO realtime), **Shared schemas/types**, plus a **Python AI/ML** service for **occupancy probability**.
+
+## Monorepo Structure
+
+- **apps/mobile**: React Native + Expo (user mobile app)
+- **apps/dashboard**: Next.js (admin dashboard)
+- **apps/server**: Express + Prisma (**REST API** + **Socket.IO** + **Swagger**)
+- **packages/shared-schemas**: shared **Zod** schemas + **TypeScript** types
+- **AI-ML**: FastAPI prediction service + training scripts
+- **docs**: API/WebSocket notes
+
+## Key Features
+
+- **Parking spaces**: list/detail/filter/CRUD (server + dashboard)
+- **Realtime updates**: subscription-based notifications via **Socket.IO**
+- **IoT webhook ingestion**: update occupancy/price by **sensorId** and notify subscribers
+- **Dashboard AI Chatbot**: parking analysis & pricing suggestions via **Ollama** (**gpt-oss**) with **streaming (SSE)**
+- **Occupancy prediction**: Python **FastAPI** service returns **occupied_probability**
+- **Shared DTO validation**: **@iot-smart-parking-system/shared-schemas** across Mobile/Dashboard/Server
 
 ## Tech Stack
 
-- Mobile: React Native + Expo + TypeScript
-- Backend: Node.js + Express + TypeScript + Prisma + PostgreSQL
+- **Mobile**: React Native + Expo + TypeScript + Expo Router + Socket.IO Client
+- **Dashboard**: Next.js + TypeScript + Tailwind + Zustand
+- **Server**: Node.js + Express + TypeScript + Prisma + PostgreSQL + Socket.IO + Swagger
+- **AI/ML**: Python + FastAPI + scikit-learn
+- **Tooling**: pnpm workspaces + ESLint + Prettier
 
 ## Prerequisites
 
-- Node.js >= 18.x
-- pnpm >= 8.x
-- Docker & Docker Compose
+- Node.js >= 18
+- pnpm >= 8
+- Docker / Docker Compose (for local PostgreSQL and production deployment)
+- (Optional) Python 3.11 (for running/training AI-ML locally)
 
-## 📱 Mobile App Features
+## Quick Start (Local Development)
 
-- Tab-based navigation
-- Cross-platform support (iOS, Android, Web)
-- Modern UI with Expo components
-- Type-safe routing with Expo Router
-
-## 🖥️ Server Features
-
-- RESTful API endpoints
-- TypeScript for type safety
-- CORS enabled
-- Environment-based configuration
-- Health check endpoint
-
-## Quick Start
+### 1) Install dependencies
 
 ```bash
-# 1. Install
-git clone <repository-url>
-cd iot-smart-parking-system
 pnpm install
-
-# 2. Start database
-docker-compose up -d
-
-# 3. Setup backend
-cp apps/server/.env.example apps/server/.env
-cd apps/server
-pnpm prisma:generate
-pnpm prisma:migrate
-pnpm prisma:seed
-cd ../..
-
-# 4. Start dev
-pnpm run dev
 ```
 
-## Access
-
-- Mobile: Scan QR with Expo Go
-- Server: http://localhost:3000
-- Swagger: http://localhost:3000/api-docs
-- Prisma Studio: `pnpm --filter server prisma:studio` → http://localhost:5555
-- pgAdmin: http://localhost:5050 (admin@parking.com / admin)
-
-## Commands
+### 2) Start PostgreSQL
 
 ```bash
-# Run
-pnpm run dev                       # Both apps
-pnpm --filter mobile start         # Mobile only
-pnpm --filter server dev           # Server only
+docker compose up -d
+```
 
-# Database
-pnpm --filter server prisma:migrate    # Run migrations
-pnpm --filter server prisma:studio     # Open GUI
-pnpm --filter server prisma:seed       # Seed data
+### 3) Configure the server and initialize the database
+
+```bash
+cp apps/server/.env.example apps/server/.env
+
+pnpm --filter server prisma:generate
+pnpm --filter server prisma:migrate
+pnpm --filter server prisma:seed
+```
+
+### 4) (Optional) Enable Dashboard AI Chatbot (Ollama)
+
+The AI Chatbot uses the server endpoint `/api/ai-chat` and requires **Ollama** running locally.
+
+```bash
+# Start Ollama (if not already running)
+ollama serve
+
+# Pull the default model used by this repo
+ollama pull gpt-oss:latest
+```
+
+### 5) (Optional) Start the AI/ML prediction service
+
+Option A: Run locally with Python
+
+```bash
+cd AI-ML
+python train_model.py
+python service.py
+```
+
+Option B: Run only the ML service with Docker
+
+```bash
+docker build -t ht2025-parking-ml ./AI-ML
+docker run --rm -p 3002:3002 ht2025-parking-ml
+```
+
+### 6) Start dev (recommended)
+
+```bash
+pnpm dev
+```
+
+Or start only what you need:
+
+```bash
+pnpm dev:server
+pnpm dev:dashboard
+pnpm dev:mobile
+```
+
+## Service URLs
+
+- **Server API**: http://localhost:3000
+- **Swagger**: http://localhost:3000/api-docs
+- **Dashboard**: http://localhost:8080
+- **Prisma Studio**: run `pnpm --filter server prisma:studio`, then open http://localhost:5555
+- **AI/ML Service** (FastAPI): http://localhost:3002 (OpenAPI: http://localhost:3002/docs)
+
+## Environment Variables (Common)
+
+### Server (apps/server/.env)
+
+- **PORT**: default 3000
+- **DATABASE_URL**: PostgreSQL connection string
+- **JWT_SECRET** / **JWT_EXPIRES_IN**: auth configuration
+- **AI_ML_SERVICE_URL** (optional): ML service base URL (defaults to http://localhost:3002)
+- **OLLAMA_MODEL** (optional): chatbot model name (defaults to **gpt-oss:latest**)
+
+### Dashboard (apps/dashboard/.env)
+
+- **NEXT_PUBLIC_API_BASE_URL**: server base URL (defaults to http://localhost:3000)
+
+### Mobile (apps/mobile/.env)
+
+- **EXPO_PUBLIC_API_BASE_URL**: production/custom server base URL (in dev, the app derives your local IP from the Expo host)
+
+## Seed Accounts
+
+- Admin: admin@parking.com / admin123
+- User: user@parking.com / user123
+
+## Common Commands
+
+```bash
+# Full dev (mobile + server + dashboard + shared-schemas)
+pnpm dev
+
+# Run a specific app/package
+pnpm server
+pnpm dashboard
+pnpm mobile
+
+# Database / Prisma
+pnpm --filter server prisma:migrate
+pnpm --filter server prisma:seed
+pnpm --filter server prisma:studio
+
+# Shared schemas (watch/build)
+pnpm schemas
+pnpm build:schemas
 
 # Code quality
-pnpm lint && pnpm format
+pnpm lint
+pnpm format
 ```
 
-## Database
+## Documentation
 
-**PostgreSQL**: `localhost:5432` / `smart_parking` / `parking_user` / `parking_password`
+- System and APIs: docs/PARKING_SYSTEM.md
+- WebSocket guide: docs/WEBSOCKET_GUIDE.md
+- WebSocket troubleshooting: docs/WEBSOCKET_TROUBLESHOOTING.md
+- shared-schemas usage: docs/shared-schemas-USAGE.md
 
-**pgAdmin**: Use host `postgres` (not localhost) when adding server
+## Preview
 
-## Test Accounts
+- **Mobile Application**: https://private-user-images.githubusercontent.com/29733380/530798908-767aa198-3d44-4c37-b058-83441419e47f.mp4
+- **Dashboard**: https://private-user-images.githubusercontent.com/29733380/537631965-230fa436-3ced-43a5-9e80-28189c934ddd.mp4?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njg4MzUxNDEsIm5iZiI6MTc2ODgzNDg0MSwicGF0aCI6Ii8yOTczMzM4MC81Mzc2MzE5NjUtMjMwZmE0MzYtM2NlZC00M2E1LTllODAtMjgxODljOTM0ZGRkLm1wND9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjAxMTklMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwMTE5VDE1MDA0MVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWNjZWM4ODdlYmJmOGM5ZTU4YjY4YWU4MGJlNDk2ZDdmZGIxMDE4Zjc2MWVlYWJmOWYwZWZhZmVmZjM5OGI3ZjImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.-cDTmULmdhjCAE4xM6Jiz9jZci4QxMfEg09wykMZpy0
 
-- `admin@parking.com` / `admin123`
-- `user@parking.com` / `user123`
-
-## 📦 Managing Dependencies
-
-### Add Dependencies to Specific Workspace
-
-```bash
-# Add to mobile app
-pnpm --filter mobile add <package-name>
-
-# Add to server
-pnpm --filter server add <package-name>
-
-# Add dev dependency
-pnpm --filter mobile add -D <package-name>
-```
-
-### Examples
-
-```bash
-# Add React Native UI library to mobile
-pnpm --filter mobile add react-native-paper
-
-# Add database library to server
-pnpm --filter server add mongoose
-
-# Add testing library to server
-pnpm --filter server add -D jest @types/jest
-```
-
-## 🤝 Contributing
-
-1. Follow the ESLint and Prettier configurations
-2. Write meaningful commit messages
-3. Test your changes before committing
-4. Keep dependencies up to date
-
-### Demo Video
-
-https://private-user-images.githubusercontent.com/29733380/530798908-767aa198-3d44-4c37-b058-83441419e47f.mp4?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NjcwMzM5MzgsIm5iZiI6MTc2NzAzMzYzOCwicGF0aCI6Ii8yOTczMzM4MC81MzA3OTg5MDgtNzY3YWExOTgtM2Q0NC00YzM3LWIwNTgtODM0NDE0MTllNDdmLm1wND9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTEyMjklMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUxMjI5VDE4NDAzOFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTNhNTFjOWUxNTIxODVlYTc4ZWYzMTY2YmQ1ZWNlYWJmZjhiYmRlOTdhYjVjYTcxYjEzNzYyNmYwYTgzZDlhNWQmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.IO9eBPakIDKPMPBJqZG3FBzCWV3zrnuH2YL1FJlSeM0
-
-## 📄 License
+## License
 
 ISC
