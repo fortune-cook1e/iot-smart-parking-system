@@ -9,7 +9,6 @@
 - **apps/server**: Express + Prisma (**REST API** + **Socket.IO** + **Swagger**)
 - **packages/shared-schemas**: shared **Zod** schemas + **TypeScript** types
 - **AI-ML**: FastAPI prediction service + training scripts
-- **docs**: API/WebSocket notes
 
 ## Key Features
 
@@ -157,13 +156,6 @@ pnpm build:schemas
 pnpm lint
 pnpm format
 ```
-
-## Documentation
-
-- System and APIs: docs/PARKING_SYSTEM.md
-- WebSocket guide: docs/WEBSOCKET_GUIDE.md
-- WebSocket troubleshooting: docs/WEBSOCKET_TROUBLESHOOTING.md
-- shared-schemas usage: docs/shared-schemas-USAGE.md
 
 ## Preview
 
